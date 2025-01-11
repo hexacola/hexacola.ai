@@ -73,6 +73,25 @@ const state = {
     timeoutMs: 60000, // 1 minute timeout per frame
     currentFrame: null,
     errors: []
+  },
+  storyDiversity: {
+    usedSceneTypes: new Set(),
+    usedElements: new Set(),
+    requiredElements: [],
+    themeKeywords: [],
+    toneSettings: {
+      genre: null,
+      mood: null,
+      intensity: 0.5
+    },
+    sceneSeeds: [],
+    noveltyScore: 0
+  },
+  sceneTypes: {
+    action: ["chase", "confrontation", "escape", "battle", "rescue"],
+    drama: ["revelation", "decision", "conversation", "reflection", "loss"],
+    transition: ["journey", "discovery", "transformation", "aftermath", "preparation"],
+    atmosphere: ["mystery", "tension", "joy", "sorrow", "wonder"]
   }
 };
 
@@ -535,10 +554,11 @@ async function generateFrameText(frameNumber) {
   const storyPhase = determineStoryPhase(frameNumber, state.currentFrameCount);
   const chosenCameraAngle = getUniqueCameraAngle(storyPhase);
 
-  // Build AI prompt
+  // Enhance the prompt with scene diversity
+  const enhancedPrompt = await enhanceSceneDiversity(frameNumber, scenario);
   const userPrompt = `
 You are creating a single story frame in a chronological sequence.
-Overall scenario: "${scenario}"
+${enhancedPrompt}
 
 Frame #${frameNumber} of ${state.currentFrameCount}
 Phase: ${currentPhase}
@@ -745,6 +765,17 @@ async function generateStoryboard() {
     // Merge user negative prompt
     const userNeg = document.getElementById("negativePromptInput").value.trim();
     const mergedNegativePrompt = `${defaultNegativePrompt}, ${userNeg}`;
+
+    // Initialize diversity settings from UI inputs
+    const theme = document.getElementById("themeInput")?.value || '';
+    const elements = document.getElementById("elementsInput")?.value.split(',') || [];
+    const tone = {
+      genre: document.getElementById("genreSelect")?.value,
+      mood: document.getElementById("moodSelect")?.value,
+      intensity: parseFloat(document.getElementById("intensitySlider")?.value || "0.5")
+    };
+    
+    initializeStoryDiversity(theme, elements, tone);
 
     // 1) Gather story details once (parse scenario)
     const storyDetails = await initializeStoryDetails();
@@ -2488,4 +2519,83 @@ async function forceStopGeneration() {
   if (stopBtn) stopBtn.remove();
   
   alert("Generation stopped by user");
+}
+
+/**********************************************************
+ * ENHANCE SCENE DIVERSITY
+ **********************************************************/
+async function enhanceSceneDiversity(frameNumber, basePrompt) {
+  const progress = frameNumber / state.currentFrameCount;
+  const phase = state.storyProgression.currentPhase;
+  
+  // Calculate scene variety requirements
+  const requiredElements = state.storyDiversity.requiredElements
+    .filter(el => !state.storyDiversity.usedElements.has(el))
+    .slice(0, 2); // Get up to 2 unused elements
+
+  // Select scene type based on story phase
+  let availableTypes = Object.keys(state.sceneTypes)
+    .filter(type => !state.storyDiversity.usedSceneTypes.has(type));
+  if (availableTypes.length === 0) {
+    state.storyDiversity.usedSceneTypes.clear();
+    availableTypes = Object.keys(state.sceneTypes);
+  }
+  
+  const sceneType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+  state.storyDiversity.usedSceneTypes.add(sceneType);
+
+  // Generate creative scene seed
+  const sceneSeed = {
+    type: sceneType,
+    elements: requiredElements,
+    intensity: Math.sin(progress * Math.PI) * 0.5 + 0.5, // Varies from 0 to 1
+    mood: state.storyDiversity.toneSettings.mood,
+    theme: state.storyDiversity.themeKeywords[0]
+  };
+  
+  state.storyDiversity.sceneSeeds.push(sceneSeed);
+
+  // Enhance the base prompt with scene diversity elements
+  const enhancedPrompt = `
+Scene Type: ${sceneType}
+Required Elements: ${requiredElements.join(', ')}
+Emotional Intensity: ${sceneSeed.intensity}
+Mood: ${sceneSeed.mood}
+Theme: ${sceneSeed.theme}
+
+Original Scenario: ${basePrompt}
+
+Create a scene that:
+1. Incorporates the required elements naturally
+2. Maintains the ${sceneType} feeling
+3. Progresses the story while adding creative elements
+4. Matches the emotional intensity and mood
+5. Reinforces the central theme
+
+Additional Context:
+- Story Phase: ${phase}
+- Progress: ${Math.round(progress * 100)}%
+- Previous Scenes: ${Array.from(state.storyDiversity.usedSceneTypes).join(', ')}
+`;
+
+  return enhancedPrompt;
+}
+
+/**********************************************************
+ * INITIALIZE STORY DIVERSITY
+ **********************************************************/
+function initializeStoryDiversity(theme, elements, tone) {
+  state.storyDiversity = {
+    usedSceneTypes: new Set(),
+    usedElements: new Set(),
+    requiredElements: elements || [],
+    themeKeywords: theme ? theme.split(',').map(t => t.trim()) : [],
+    toneSettings: {
+      genre: tone?.genre || 'drama',
+      mood: tone?.mood || 'neutral',
+      intensity: tone?.intensity || 0.5
+    },
+    sceneSeeds: [],
+    noveltyScore: 0
+  };
 }
