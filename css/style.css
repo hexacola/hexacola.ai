@@ -101,8 +101,8 @@
   --spacing-lg: 2rem;
 
   /* New Creative Effect Variables */
-  --neon-primary: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
-  --neon-secondary: 0 0 10px var(--secondary-color), 0 0 20px var(--secondary-color), 0 0 30px var(--secondary-color);
+  --neon-primary: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+  --neon-secondary: 0 0 10px var(--secondary-color), 0 0 20px var(--secondary-color);
   --wave-timing: cubic-bezier(0.4, 0, 0.2, 1);
   --rotate-timing: cubic-bezier(0.4, 0, 0.6, 1);
 }
@@ -231,10 +231,9 @@ body > main,
   -webkit-backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.9);
   box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal);
+  transition: clip-path 0.5s var(--wave-timing);
   background: linear-gradient(135deg, var(--surface-color) 0%, rgba(255,255,255,0.95) 100%);
   clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 15% 100%, 0 85%);
-  transition: clip-path 0.5s var(--wave-timing);
 }
 
 .main-header:hover {
@@ -1105,6 +1104,13 @@ body > main,
   height: auto; /* Remove fixed height */
   min-height: calc(100vh - 60px); /* Full viewport height minus header */
   overflow-y: visible; /* Allow content to scroll */
+  background: linear-gradient(
+    to bottom,
+    rgba(107, 142, 35, 0.05),
+    rgba(107, 142, 35, 0.02)
+  );
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .header {
@@ -1464,7 +1470,6 @@ body > main,
   border: 3px solid var(--primary-color);
   border-radius: 50%;
   border-top-color: transparent;
-  animation: spin 1s linear infinite;
   animation: rotateGlow 2s linear infinite;
   box-shadow: var(--neon-primary);
 }
