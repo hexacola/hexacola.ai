@@ -134,38 +134,6 @@ git clone https://github.com/hexacola/hexacola-ai-creative.git
 - Prettier (Code formatting)
 - Chrome DevTools (Debug/Profile)
 
-## 📂 Project Structure
-```
-hexacola-ai/
-├── css/
-│   ├── style.css
-│   ├── dark-mode.css
-│   └── responsive.css
-├── js/
-│   ├── app.js             # Main application logic
-│   ├── auth.js            # Authentication
-│   ├── chat.js            # AI chat functionality
-│   ├── news.js            # AI news integration
-│   ├── navigation.js      # Navigation handling
-│   ├── scriptwriter.js    # Script editor
-│   └── storyboard.js      # Storyboard creator
-├── pages/
-│   ├── generator.html     # Image generator
-│   ├── storyboard.html    # Storyboard tool
-│   ├── scriptwriter.html  # Script editor
-│   └── chat.html         # AI chat interface
-├── assets/
-│   ├── icons/
-│   └── images/
-├── tests/
-│   └── unit/
-├── docs/
-│   └── api/
-├── index.html
-├── LICENSE
-└── README.md
-```
-
 ## 🔌 API References
 
 ### Pollinations.AI
@@ -209,28 +177,6 @@ hexacola-ai/
 - Early beta testers & feedback providers
 - Creative AI community
 
-## 🚀 Development Guidelines
-
-### Code Style
-- Follow ESLint configuration
-- Use Prettier for formatting
-- Follow component-based architecture
-- Document all functions & modules
-- Write unit tests for core features
-
-### Git Workflow
-1. Create feature branch
-2. Develop & test locally
-3. Run linting & tests
-4. Create pull request
-5. Code review & merge
-
-### Testing
-- Unit tests for core functions
-- Integration tests for API calls
-- UI/UX testing for components
-- Performance benchmarking
-- Cross-browser compatibility
 
 ## 👥 Contact & Support
 
@@ -243,7 +189,7 @@ hexacola-ai/
 - Google Fonts for typography
 - Prism.js for code highlighting
 - PDF.js and JSZip for export functionality
-- Pollinations.AI for image generation
+- Pollinations.AI for image adn text generation
 
 ---
 
