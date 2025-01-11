@@ -64,16 +64,15 @@
       <button id="chatBtn" aria-label="Go to chat" onclick="navigateToChat()">
         <i class="fas fa-comments"></i> Chat
       </button>
+      <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+        <i class="fas fa-user"></i> Login
+      </button>
       <button
         id="darkModeToggle"
         class="dark-mode-toggle"
         aria-label="Toggle dark mode"
       >
         <i class="fas fa-moon"></i> 🌙
-      </button>
-      <!-- Add Login Button -->
-      <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
-        <i class="fas fa-user"></i> Login
       </button>
     </nav>
   </header>
@@ -244,7 +243,7 @@
       <div id="storyboard-container" class="storyboard-container">
         <div id="storyboard" class="storyboard">
           <div class="content-area">
-            <div class="header buttons">
+            <div class="storyboard .header buttons">
               <button
                 class="generate tooltip"
                 id="addFrameBtn"
@@ -344,12 +343,16 @@
     aria-labelledby="loading"
     aria-live="assertive"
   >
-    <div class="loader"></div>
-    <div id="loading" class="loading-text">Preparing to create magic...</div>
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
+    <div class="loading-container">
+      <div class="hexagon-loader">
+        <div class="hexagon"></div>
+      </div>
+      <div id="timer" class="loading-text">Initializing...</div>
+      <div id="loadingMessage" class="loading-message">Preparing to create your masterpiece...</div>
+      <div class="thinking-process" id="thinkingProcess">
+        <!-- ...existing thinking process code... -->
+      </div>
     </div>
-    <div id="aiMessage" class="ai-message loading-message"></div>
   </div>
 
   <footer>
