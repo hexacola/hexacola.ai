@@ -33,7 +33,7 @@ HEXACOLA.AI is an AI-powered creative suite combining image generation, storyboa
 
 ### Beta Features
 - 🔶 Chat Assistant with Brain Memory
-- 🔶 Creative AI News Feed
+- 🔶 Creative AI News Feed - (AFTER I MAKE DOMAIN)
 
 ### In Development
 - 🚧 Complete Scriptwriter Suite
