@@ -107,42 +107,130 @@ git clone https://github.com/hexacola/hexacola-ai-creative.git
 
 ## 🛠 Tech Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Libraries**:
-  - Font Awesome (Icons)
-  - Google Fonts
-  - Prism.js (Code highlighting)
-  - PDF.js (Export)
-  - JSZip (Export)
+### Frontend
+- HTML5, CSS3, JavaScript (ES6+)
+- Font Awesome 5.15.3 (Icons)
+- Google Fonts (Roboto)
+- Dark/Light mode support
+- Responsive mobile-first design
+
+### Libraries & Dependencies
+- Prism.js (Code syntax highlighting)
+- PDF.js (PDF generation)
+- JSZip (ZIP file handling)
+- DOMPurify (XSS protection)
+- FileSaver.js (File downloads)
+- Quill.js (Rich text editor)
+
+### AI Integration
+- OpenAI API Integration
+- Pollinations.AI Image Generation
+- Custom Brain Memory System
+- Real-time Creative AI News Feed
+
+### Testing & Quality
+- Jest (Unit Testing)
+- ESLint (Code quality)
+- Prettier (Code formatting)
+- Chrome DevTools (Debug/Profile)
 
 ## 📂 Project Structure
 ```
 hexacola-ai/
 ├── css/
-│   └── style.css
+│   ├── style.css
+│   ├── dark-mode.css
+│   └── responsive.css
 ├── js/
-│   ├── app.js
-│   ├── news.js
-│   └── navigation.js
+│   ├── app.js             # Main application logic
+│   ├── auth.js            # Authentication
+│   ├── chat.js            # AI chat functionality
+│   ├── news.js            # AI news integration
+│   ├── navigation.js      # Navigation handling
+│   ├── scriptwriter.js    # Script editor
+│   └── storyboard.js      # Storyboard creator
+├── pages/
+│   ├── generator.html     # Image generator
+│   ├── storyboard.html    # Storyboard tool
+│   ├── scriptwriter.html  # Script editor
+│   └── chat.html         # AI chat interface
+├── assets/
+│   ├── icons/
+│   └── images/
+├── tests/
+│   └── unit/
+├── docs/
+│   └── api/
 ├── index.html
+├── LICENSE
 └── README.md
 ```
 
-## 📄 License Information
+## 🔌 API References
 
-### Personal Use (Free)
-- Personal projects
-- Educational purposes
-- Non-profit use
-- Testing and learning
+### Pollinations.AI
+- **Image Generation**: `https://image.pollinations.ai/prompt/`
+  - Supports multiple models (Flux, Turbo, etc.)
+  - Real-time generation with progress tracking
+  - Custom negative prompts
+  - Various aspect ratios
 
-### Commercial Use (Paid License)
-- Revenue-generating projects
-- Business applications
-- Commercial derivatives
-- Monetized content
+### Text Generation
+- **Base URL**: `https://text.pollinations.ai/`
+  - Context-aware responses
+  - Multiple model support
+  - Memory system integration
 
-Contact taurisblog@gmail.com for commercial licensing.
+## 🤝 Acknowledgments
+
+### Core Technologies
+- [Pollinations.AI](https://pollinations.ai) - Core image generation API
+- [OpenAI](https://openai.com) - Language model integration
+- [Font Awesome](https://fontawesome.com) - Icon system
+- [Google Fonts](https://fonts.google.com) - Typography
+- [Prism.js](https://prismjs.com) - Code highlighting
+- [PDF.js](https://mozilla.github.io/pdf.js/) - PDF generation
+- [JSZip](https://stuk.github.io/jszip/) - ZIP file handling
+- [DOMPurify](https://github.com/cure53/DOMPurify) - XSS protection
+- [FileSaver.js](https://github.com/eligrey/FileSaver.js/) - File downloads
+- [Quill.js](https://quilljs.com/) - Rich text editor
+
+### Development Tools
+- GitHub - Version control & hosting
+- Chrome DevTools - Development & debugging
+- Visual Studio Code - Code editing
+- ESLint - Code quality
+- Prettier - Code formatting
+- Jest - Testing framework
+
+### Special Thanks
+- Pollinations.AI team for API support
+- Open source community contributors
+- Early beta testers & feedback providers
+- Creative AI community
+
+## 🚀 Development Guidelines
+
+### Code Style
+- Follow ESLint configuration
+- Use Prettier for formatting
+- Follow component-based architecture
+- Document all functions & modules
+- Write unit tests for core features
+
+### Git Workflow
+1. Create feature branch
+2. Develop & test locally
+3. Run linting & tests
+4. Create pull request
+5. Code review & merge
+
+### Testing
+- Unit tests for core functions
+- Integration tests for API calls
+- UI/UX testing for components
+- Performance benchmarking
+- Cross-browser compatibility
 
 ## 👥 Contact & Support
 
@@ -155,6 +243,7 @@ Contact taurisblog@gmail.com for commercial licensing.
 - Google Fonts for typography
 - Prism.js for code highlighting
 - PDF.js and JSZip for export functionality
+- Pollinations.AI for image generation
 
 ---
 
