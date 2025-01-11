@@ -385,16 +385,15 @@ async function attemptAPICall(endpoint, userMessage, modelConfig) {
         messages: [
           {
             role: "system",
-            content: "You produce strictly valid JSON with string values only. No code blocks. Must have exact requested keys."
+            content: "You must produce valid JSON with string values. Include as many of these keys as possible: title, action, background, characters, location, camera, emotion, narration, storyProgress, characterPlacement, positioningMovement."
           },
           { role: "user", content: userMessage }
         ],
-        model: "openai",  // Always use OpenAI
+        model: "openai",
         seed: Math.floor(Math.random() * 100000),
         jsonMode: true,
-        censored: true    // Always use censored mode
+        censored: true
       }),
-      // Add timeout to prevent hanging
       signal: AbortSignal.timeout(15000)
     });
 
@@ -410,11 +409,13 @@ async function attemptAPICall(endpoint, userMessage, modelConfig) {
     let content = data.choices[0].message.content.trim();
     content = content.replace(/```json|```/g, "").trim();
     
-    // Validate JSON structure
-    const parsed = JSON.parse(content);
-    validateResponseStructure(parsed);
-    
-    return parsed;
+    try {
+      const parsed = JSON.parse(content);
+      return addMissingFields(parsed);
+    } catch (parseError) {
+      console.warn('JSON parse error:', parseError);
+      return createFallbackResponse(userMessage);
+    }
 
   } catch (error) {
     console.warn(`API attempt failed:`, error);
@@ -423,48 +424,66 @@ async function attemptAPICall(endpoint, userMessage, modelConfig) {
 }
 
 /**
- * Validate response has required structure
+ * Add missing fields with default values
  */
-function validateResponseStructure(response) {
-  const requiredKeys = ['title', 'action', 'background', 'characters', 'location', 'camera', 'emotion', 'narration', 'storyProgress', 'characterPlacement', 'positioningMovement'];
-  const missingKeys = requiredKeys.filter(key => !response[key]);
-  
-  if (missingKeys.length > 0) {
-    throw new Error(`Response missing required keys: ${missingKeys.join(', ')}`);
-  }
+function addMissingFields(response) {
+  const defaults = {
+    title: "Untitled Scene",
+    action: "Scene continues",
+    background: "Simple background",
+    characters: "Characters in scene",
+    location: "Current location",
+    camera: "Default camera angle",
+    emotion: "Neutral",
+    narration: "The story continues",
+    storyProgress: "Story in progress",
+    characterPlacement: "Characters positioned naturally",
+    positioningMovement: "Natural movement and positioning"
+  };
+
+  // Add any missing fields from defaults
+  Object.keys(defaults).forEach(key => {
+    if (!response[key]) {
+      response[key] = defaults[key];
+    }
+  });
+
+  return response;
 }
 
 /**
- * Generate fallback response when APIs fail
+ * Create fallback response with basic structure
  */
-function generateLocalFallbackResponse(userMessage) {
-  console.log('Generating local fallback response');
-  
-  // Extract basic info from user message
-  let characters = "Characters from scenario";
-  let location = "Location from scenario";
-  
-  if (userMessage.includes('characters:')) {
-    characters = userMessage.split('characters:')[1].split('\n')[0].trim();
-  }
-  if (userMessage.includes('location:')) {
-    location = userMessage.split('location:')[1].split('\n')[0].trim();
-  }
-
-  // Return basic structured response
+function createFallbackResponse(userMessage) {
   return {
-    title: "Untitled Scene",
-    action: "Characters continue their story",
-    background: "A simple background",
-    characters: characters,
-    location: location,
-    camera: state.cameraAngles[Math.floor(Math.random() * state.cameraAngles.length)],
+    title: "Scene",
+    action: "The story continues",
+    background: "A suitable background",
+    characters: extractCharacters(userMessage),
+    location: extractLocation(userMessage),
+    camera: "Medium shot",
     emotion: "Neutral",
-    narration: "The story continues...",
-    storyProgress: "Story progresses naturally",
-    characterPlacement: "Characters are positioned naturally within the scene.",
-    positioningMovement: "Characters are depicted with clear positioning and dynamic movement."
+    narration: "The scene progresses",
+    storyProgress: "Story continues naturally",
+    characterPlacement: "Characters are positioned appropriately",
+    positioningMovement: "Characters move naturally in the scene"
   };
+}
+
+/**
+ * Extract potential character information from user message
+ */
+function extractCharacters(message) {
+  const characterMatch = message.match(/characters?:([^.!?\n]+)/i);
+  return characterMatch ? characterMatch[1].trim() : "Characters in scene";
+}
+
+/**
+ * Extract potential location information from user message
+ */
+function extractLocation(message) {
+  const locationMatch = message.match(/location:([^.!?\n]+)/i);
+  return locationMatch ? locationMatch[1].trim() : "Current location";
 }
 
 /**********************************************************
@@ -1010,7 +1029,10 @@ function getDimensionsFromAspect(aspect) {
  * PROGRESS BAR
  **********************************************************/
 function updateProgressBar(pct) {
-  document.getElementById("progressBar").style.width = `${pct || 0}%`;
+  const progressBar = document.getElementById("progressBar");
+  if (progressBar) {
+    progressBar.style.width = `${pct || 0}%`;
+  }
 }
 
 /**********************************************************
