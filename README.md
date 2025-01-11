@@ -152,7 +152,7 @@ git clone https://github.com/hexacola/hexacola-ai-creative.git
 ## 🤝 Acknowledgments
 
 ### Core Technologies
-- [Pollinations.AI](https://pollinations.ai) - Core image generation API
+- [Pollinations.AI](https://pollinations.ai) - Core image generation and text API
 - [OpenAI](https://openai.com) - Language model integration
 - [Font Awesome](https://fontawesome.com) - Icon system
 - [Google Fonts](https://fonts.google.com) - Typography
