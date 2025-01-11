@@ -105,6 +105,17 @@ const loadingMessages = [
 let loadingMessageInterval;
 let thinkingStepTimeout;
 
+// Add new proxy list near the top with other constants
+const corsProxies = [
+  '', // Direct request first
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://cors-proxy.htmldriven.com/?url=',
+  'https://crossorigin.me/',
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.codetabs.com/v1/proxy?quest='
+];
+
 /*******************************************************
  * UTILITY / UI-RELATED FUNCTIONS
  *******************************************************/
@@ -720,7 +731,7 @@ class ImageProcessor {
     const backoffDelay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
 
     try {
-      const response = await fetchWithTimeout(url, {}, adaptiveTimeout);
+      const response = await fetchWithProxies(url, adaptiveTimeout);
       
       if (response.status === 500) {
         const currentModel = url.match(/model=([^&]+)/)[1];
@@ -899,8 +910,19 @@ async function generateImage() {
     combinedPrompt = `${selectedColorSchemes.join(', ')}, ${combinedPrompt}`;
   }
 
-  // Create final API URL (negative prompt not used by this API)
-  const urlBase = `https://image.pollinations.ai/prompt/${encodeURIComponent(combinedPrompt)}?model=${encodeURIComponent(model)}&width=${encodeURIComponent(width)}&height=${encodeURIComponent(height)}&nologo=true`;
+  // Create the base URL without proxy
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(combinedPrompt)}`;
+  
+  // Add parameters separately to avoid encoding issues
+  const params = new URLSearchParams({
+    model: model,
+    width: width.toString(),
+    height: height.toString(),
+    nologo: 'true'
+  });
+
+  // Combine URL and parameters
+  const fullUrl = `${imageUrl}?${params.toString()}`;
 
   try {
     // Show overlay and start animations
@@ -936,7 +958,7 @@ async function generateImage() {
     for (let i = 0; i < imageOptions; i++) {
       const uniqueSeed = seed ? seed + i : Math.floor(Math.random() * 100000);
       urls.push({
-        url: `${urlBase}&seed=${encodeURIComponent(uniqueSeed)}`,
+        url: `${fullUrl}&seed=${uniqueSeed}`,
         index: i
       });
     }
@@ -1352,15 +1374,13 @@ async function fetchWithTimeout(url, options = {}, timeout = 180000) { // Increa
   try {
     const fetchPromise = fetch(url, {
       ...options,
+      mode: 'no-cors', // Add no-cors mode
       signal: controller.signal,
       headers: {
         ...options.headers,
-        'Accept': 'image/*',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Connection': 'keep-alive'
-      },
-      keepalive: true
+        'Accept': 'image/*'
+        // Removed Cache-Control and Pragma headers
+      }
     });
 
     const timeoutPromise = new Promise((_, reject) => {
@@ -1383,45 +1403,62 @@ async function fetchWithTimeout(url, options = {}, timeout = 180000) { // Increa
   }
 }
 
-/** 
- * Improved retry logic with progressive timeouts
+/**
+ * Improved model fallback chain with all available models
  */
-async function fetchWithRetry(url, attempt = 1, maxAttempts = 12) { // Increased max attempts
-  // Progressive backoff with longer initial delay for larger images
-  const backoffDelay = Math.min(3000 * Math.pow(2, attempt - 1), 45000);
+function getAlternativeModel(currentModel) {
+  const modelFallbacks = {
+    'flux': ['flux-pro', 'turbo', 'flux-anime', 'flux-3d', 'flux-realism'],
+    'flux-pro': ['flux', 'turbo', 'flux-anime'],
+    'turbo': ['flux', 'flux-pro', 'flux-anime'],
+    'flux-anime': ['flux', 'flux-pro', 'turbo'],
+    'flux-3d': ['flux', 'flux-pro', 'flux-realism'],
+    'flux-realism': ['flux', 'flux-pro', 'flux-3d'],
+    'flux-cablyal': ['flux-pro', 'flux', 'turbo'],
+    'any-dark': ['flux', 'flux-pro', 'turbo'],
+    'Unity': ['flux-pro', 'flux', 'turbo']
+  };
+
+  const fallbacks = modelFallbacks[currentModel];
+  if (!fallbacks) return 'flux'; // Default fallback
+  
+  // Return the first fallback model that hasn't been tried yet
+  return fallbacks[0];
+}
+
+/** 
+ * Improved retry logic with progressive timeouts and model rotation
+ */
+async function fetchWithRetry(url, attempt = 1, maxAttempts = 12, triedModels = new Set()) {
+  const backoffDelay = Math.min(3000 * Math.pow(1.5, attempt - 1), 45000);
+  const currentModel = url.match(/model=([^&]+)/)?.[1];
   
   try {
-    console.log(`Attempt ${attempt}/${maxAttempts} for URL: ${url}`);
+    console.log(`Attempt ${attempt}/${maxAttempts} using model: ${currentModel}`);
     const response = await fetchWithTimeout(url);
 
-    if (response.status === 500) {
-      const currentModel = url.match(/model=([^&]+)/)[1];
-      const alternativeModel = getAlternativeModel(currentModel);
-      
-      // Try alternative model with fresh attempt count
-      if (alternativeModel && attempt <= 4) {
-        console.log(`Switching to alternative model: ${alternativeModel}`);
-        const newUrl = url.replace(`model=${currentModel}`, `model=${alternativeModel}`);
-        // Add small delay before trying new model
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        return fetchWithRetry(newUrl, 1, maxAttempts);
-      }
-      
-      throw new Error(`Server error (500) with model ${currentModel}`);
-    }
-
     if (!response.ok) {
+      if (response.status === 500 && currentModel) {
+        triedModels.add(currentModel);
+        const alternativeModel = getAlternativeModel(currentModel);
+        
+        if (alternativeModel && !triedModels.has(alternativeModel)) {
+          console.log(`Switching to model: ${alternativeModel}`);
+          const newUrl = url.replace(`model=${currentModel}`, `model=${alternativeModel}`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return fetchWithRetry(newUrl, 1, maxAttempts, triedModels);
+        }
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('image/')) {
+    if (!contentType?.includes('image/')) {
       throw new Error('Invalid content type received');
     }
 
-    // Verify blob size is reasonable
     const blob = await response.blob();
-    if (blob.size < 1000) { // Less than 1KB is probably an error
+    if (blob.size < 1000) {
       throw new Error('Invalid image data received');
     }
 
@@ -1431,21 +1468,20 @@ async function fetchWithRetry(url, attempt = 1, maxAttempts = 12) { // Increased
     console.warn(`Attempt ${attempt} failed:`, error.message);
 
     if (attempt < maxAttempts) {
-      console.log(`Retrying in ${backoffDelay}ms... (${attempt}/${maxAttempts})`);
+      console.log(`Retrying in ${backoffDelay}ms...`);
       await new Promise(resolve => setTimeout(resolve, backoffDelay));
       
-      // Try model fallback on persistent failures
-      if (attempt > 3 && (error.message.includes('500') || error.message.includes('timeout'))) {
-        const currentModel = url.match(/model=([^&]+)/)[1];
+      if (attempt % 3 === 0 && currentModel) {
+        triedModels.add(currentModel);
         const alternativeModel = getAlternativeModel(currentModel);
-        if (alternativeModel) {
+        
+        if (alternativeModel && !triedModels.has(alternativeModel)) {
           const newUrl = url.replace(`model=${currentModel}`, `model=${alternativeModel}`);
-          console.log(`Failure recovery: switching to model ${alternativeModel}`);
-          return fetchWithRetry(newUrl, attempt + 1, maxAttempts);
+          return fetchWithRetry(newUrl, attempt + 1, maxAttempts, triedModels);
         }
       }
       
-      return fetchWithRetry(url, attempt + 1, maxAttempts);
+      return fetchWithRetry(url, attempt + 1, maxAttempts, triedModels);
     }
 
     throw new Error(`Failed after ${maxAttempts} attempts: ${error.message}`);
@@ -1453,21 +1489,270 @@ async function fetchWithRetry(url, attempt = 1, maxAttempts = 12) { // Increased
 }
 
 /**
- * Improved model fallback chain
+ * Try different CORS proxies until one works
  */
-function getAlternativeModel(currentModel) {
-  const modelFallbacks = {
-    'flux-pro': 'flux',
-    'flux': 'turbo',
-    'flux-anime': 'flux',
-    'turbo': 'flux-pro',
-    'flux-3d': 'flux',
-    'flux-realism': 'flux',
-    'flux-cablyal': 'flux-pro',
-    'any-dark': 'flux',
-    'Unity': 'flux-pro'
-  };
-  return modelFallbacks[currentModel];
+async function fetchWithProxies(imageUrl, timeout = 180000) {
+  let lastError;
+  
+  for (const proxy of corsProxies) {
+    try {
+      const fullUrl = proxy ? `${proxy}${encodeURIComponent(imageUrl)}` : imageUrl;
+      const response = await fetch(fullUrl, {
+        mode: proxy ? 'cors' : 'no-cors',
+        headers: {
+          'Accept': 'image/*'
+        },
+        timeout: timeout
+      });
+      
+      if (response.ok) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+      console.warn(`Proxy ${proxy || 'direct'} failed:`, error);
+      continue;
+    }
+  }
+  
+  throw lastError || new Error('All proxies failed');
+}
+
+// Update the generateImage function's URL creation and fetch logic:
+async function generateImage() {
+  const generateButton = document.querySelector('.generate');
+  generateButton.disabled = true;
+
+  // Gather user inputs
+  const backgroundPrompt = document.getElementById('backgroundPrompt').value.trim();
+  const characterPrompt = document.getElementById('characterPrompt').value.trim();
+  const negativePrompt = document.getElementById('negativePrompt').value.trim();
+  const model = document.getElementById('model').value;
+  const width = parseInt(document.getElementById('width').value, 10);
+  const height = parseInt(document.getElementById('height').value, 10);
+  const seedInput = document.getElementById('seed').value.trim();
+  const seed = seedInput ? parseInt(seedInput, 10) : null;
+  const imageOptions = parseInt(document.getElementById('imageOptions').value, 10);
+  const style = document.getElementById('style').value;
+
+  // Additional character descriptions
+  const additionalCharacterDescriptions = [];
+  const additionalGroups = document.querySelectorAll('.additional-character-group textarea');
+  additionalGroups.forEach(textarea => {
+    const desc = textarea.value.trim();
+    if (desc) additionalCharacterDescriptions.push(desc);
+  });
+
+  // Selected camera features & color schemes
+  const selectedCameraFeatures = Array.from(document.querySelectorAll('#cameraFeaturesToggles button.active')).map(btn => btn.textContent);
+  const selectedColorSchemes = Array.from(document.querySelectorAll('#colorSchemesToggles button.active')).map(btn => btn.textContent);
+
+  // Check if all prompts are empty
+  const noPrompts = !backgroundPrompt && !characterPrompt && additionalCharacterDescriptions.length === 0;
+  let backgroundCombinedPrompt = '';
+  let characterCombinedPrompt = '';
+
+  // Auto-generate background & character if user gave no prompts
+  if (noPrompts) {
+    try {
+      [backgroundCombinedPrompt, characterCombinedPrompt] = await Promise.all([
+        generateRandomPromptFunction('background', style, selectedCameraFeatures, selectedColorSchemes),
+        generateRandomPromptFunction('character', style, selectedCameraFeatures, selectedColorSchemes)
+      ]);
+      document.getElementById('backgroundPrompt').value = backgroundCombinedPrompt;
+      document.getElementById('characterPrompt').value = characterCombinedPrompt;
+    } catch (error) {
+      console.error(error);
+      alert('Failed to generate random description. Please try again.');
+      generateButton.disabled = false;
+      return;
+    }
+  } else {
+    backgroundCombinedPrompt = backgroundPrompt;
+    characterCombinedPrompt = characterPrompt;
+  }
+
+  // Ensure at least one prompt is present
+  if (!backgroundCombinedPrompt && !characterCombinedPrompt) {
+    alert('Please provide at least one background or character prompt.');
+    generateButton.disabled = false;
+    return;
+  }
+
+  saveSettings();
+
+  // Initialize prompt strings for optimization
+  let optimizedBackgroundPrompt = backgroundCombinedPrompt;
+  let optimizedCharacterPrompt = characterCombinedPrompt;
+  let optimizedNegativePrompt = "low quality, blurry, bad anatomy, out of focus, noise, duplicate, watermark, text, ugly, messy, " + negativePrompt;
+
+  // If auto-mode is on, attempt prompt optimization with AI
+  if (autoMode) {
+    try {
+      if (backgroundCombinedPrompt) {
+        optimizedBackgroundPrompt = await optimizePrompt(
+          `Optimize the following background prompt for high-quality image generation in ${style} style with camera features ${selectedCameraFeatures.join(', ')} and color schemes ${selectedColorSchemes.join(', ')}: "${backgroundCombinedPrompt}"`
+        );
+      }
+      if (characterCombinedPrompt) {
+        optimizedCharacterPrompt = await optimizePrompt(
+          `Optimize the following character prompt for high-quality image generation in ${style} style with camera features ${selectedCameraFeatures.join(', ')} and color schemes ${selectedColorSchemes.join(', ')}: "${characterCombinedPrompt}"`
+        );
+      }
+      for (let i = 0; i < additionalCharacterDescriptions.length; i++) {
+        additionalCharacterDescriptions[i] = await optimizePrompt(
+          `Optimize the following character description to match the ${style} style with camera features ${selectedCameraFeatures.join(', ')} and color schemes ${selectedColorSchemes.join(', ')}: "${additionalCharacterDescriptions[i]}"`
+        );
+      }
+      if (negativePrompt) {
+        optimizedNegativePrompt = "low quality, blurry, bad anatomy, out of focus, noise, duplicate, watermark, text, ugly, messy, " + 
+          await optimizePrompt(`Optimize the following negative prompt to exclude unwanted elements: "${negativePrompt}"`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error optimizing descriptions with AI. Please try again.');
+      generateButton.disabled = false;
+      return;
+    }
+  }
+
+  // Integrate additional character descriptions
+  let fullCharacterPrompt = optimizedCharacterPrompt;
+  if (additionalCharacterDescriptions.length > 0) {
+    fullCharacterPrompt += ' ' + additionalCharacterDescriptions.join(' ');
+    fullCharacterPrompt += ' Ensure all characters maintain the same style, facial structure, and clothing.';
+  }
+
+  // Merge background + character
+  let combinedPrompt = '';
+  if (optimizedBackgroundPrompt && fullCharacterPrompt) {
+    combinedPrompt = `${optimizedBackgroundPrompt}, ${fullCharacterPrompt}, with correct proportions, good perspective, and excellent composition.`;
+  } else if (optimizedBackgroundPrompt) {
+    combinedPrompt = `${optimizedBackgroundPrompt}, with correct proportions, good perspective, and excellent composition.`;
+  } else if (fullCharacterPrompt) {
+    combinedPrompt = `${fullCharacterPrompt}, with correct proportions, good perspective, and excellent composition.`;
+  }
+
+  // Apply style
+  if (style === 'Mix') {
+    combinedPrompt = appendMixStyleToPrompt(combinedPrompt);
+  } else if (style !== 'None') {
+    combinedPrompt = appendStyleToPrompt(combinedPrompt, style);
+  }
+
+  // Prepend camera features & color schemes
+  if (selectedCameraFeatures.length > 0) {
+    combinedPrompt = `${selectedCameraFeatures.join(', ')}, ${combinedPrompt}`;
+  }
+  if (selectedColorSchemes.length > 0) {
+    combinedPrompt = `${selectedColorSchemes.join(', ')}, ${combinedPrompt}`;
+  }
+
+  // Create the base URL without proxy
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(combinedPrompt)}`;
+  
+  // Add parameters separately to avoid encoding issues
+  const params = new URLSearchParams({
+    model: model,
+    width: width.toString(),
+    height: height.toString(),
+    nologo: 'true'
+  });
+
+  // Combine URL and parameters
+  const fullUrl = `${imageUrl}?${params.toString()}`;
+
+  try {
+    // Show overlay and start animations
+    const overlay = document.getElementById('overlay');
+    const timer = document.getElementById('timer');
+    overlay.style.display = 'flex';
+
+    let seconds = 0;
+    timer.textContent = `Generation time: ${seconds}s`;
+    timerInterval = setInterval(() => {
+      seconds++;
+      timer.textContent = `Generation time: ${seconds}s`;
+    }, 1000);
+
+    // Rotate loading messages every 3s
+    updateLoadingMessage();
+    loadingMessageInterval = setInterval(updateLoadingMessage, 3000);
+
+    // Thinking process animation
+    animateThinkingProcess();
+
+    // Progress bar
+    totalImages = imageOptions;
+    generatedImagesCount = 0;
+    updateProgressBar();
+
+    // Clear previously generated images
+    const generatedImageDiv = document.getElementById('generatedImage');
+    generatedImageDiv.innerHTML = '';
+
+    // Prepare URLs for parallel processing
+    const urls = [];
+    for (let i = 0; i < imageOptions; i++) {
+      const uniqueSeed = seed ? seed + i : Math.floor(Math.random() * 100000);
+      urls.push({
+        url: `${fullUrl}&seed=${uniqueSeed}`,
+        index: i
+      });
+    }
+
+    // Process images in parallel with controlled concurrency
+    const processor = new ImageProcessor(3); // Process 3 images concurrently
+    const results = await processor.processUrls(urls);
+
+    // Handle results
+    const successCount = results.filter(r => r.success).length;
+    if (successCount === 0) {
+      throw new Error('All image generation attempts failed. Please try again with different parameters.');
+    }
+
+    results.forEach(({ blob, index, success }) => {
+      if (success && blob) {
+        const imgUrl = URL.createObjectURL(blob);
+        addImageToGallery(
+          imgUrl,
+          combinedPrompt,
+          model,
+          width,
+          height,
+          seed ? seed + index : `Random_${Date.now()}`,
+          blob.type
+        );
+        saveImage(
+          imgUrl,
+          combinedPrompt,
+          model,
+          width,
+          height,
+          seed ? seed + index : `Random_${Date.now()}`,
+          blob.type
+        );
+      }
+    });
+
+    if (successCount < imageOptions) {
+      alert(`Generated ${successCount} out of ${imageOptions} images. Some images failed to generate.`);
+    }
+
+  } catch (error) {
+    console.error('Image generation error:', error);
+    alert(`Error generating image${error.message ? ': ' + error.message : '. Please try again.'}`);
+    document.getElementById('generatedImage').innerHTML = '';
+  } finally {
+    clearInterval(timerInterval);
+    clearInterval(loadingMessageInterval);
+    clearTimeout(thinkingStepTimeout);
+    document.querySelectorAll('.thinking-step').forEach(step => step.classList.remove('active', 'complete'));
+
+    document.getElementById('overlay').style.display = 'none';
+    generateButton.disabled = false;
+    document.getElementById('progressOverlay').style.display = 'none';
+  }
 }
 
 // ...rest of existing code...
