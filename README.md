@@ -124,7 +124,7 @@ git clone https://github.com/hexacola/hexacola-ai-creative.git
 
 ### AI Integration
 - OpenAI API Integration
-- Pollinations.AI Image Generation
+- Pollinations.AI Image and Text Generation
 - Custom Brain Memory System
 - Real-time Creative AI News Feed
 
@@ -167,16 +167,12 @@ git clone https://github.com/hexacola/hexacola-ai-creative.git
 - GitHub - Version control & hosting
 - Chrome DevTools - Development & debugging
 - Visual Studio Code - Code editing
-- ESLint - Code quality
-- Prettier - Code formatting
-- Jest - Testing framework
 
 ### Special Thanks
 - Pollinations.AI team for API support
 - Open source community contributors
 - Early beta testers & feedback providers
 - Creative AI community
-
 
 ## 👥 Contact & Support
 
