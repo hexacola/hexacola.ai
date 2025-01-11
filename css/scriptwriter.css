@@ -1,0 +1,416 @@
+/* -------------------------------------------------------------------------
+   style.css – CRAZY CREATIVE FULL REDESIGN
+   -------------------------------------------------------------------------
+   This stylesheet retains all relevant class names from your snippet 
+   (like .bg-red, .title-xxl, .h-spray-t, etc.) and applies wild waves, 
+   neon glows, rotating animations, big transitions, etc., to give 
+   everything a bold and imaginative look.
+   ------------------------------------------------------------------------- */
+
+/* ---------------------- GLOBAL RESETS / BASE ---------------------- */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: main-sans, sans-serif; /* from your snippet */
+  overflow-x: hidden;
+  color: #070612; /* default text color from snippet */
+  background-color: #fff;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* iOS Safari fix for 100vh issues or potential extra device frames */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Quick fade/scale Keyframes for random elements */
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Neon/Glowy Keyframes */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px #fe0000, 0 0 12px #fe0000 inset;
+  }
+  50% {
+    box-shadow: 0 0 16px #0f0, 0 0 24px #ff0 inset;
+  }
+}
+
+/* Rotating Glow for backgrounds or large radial shapes */
+@keyframes rotateGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Horizontal marquee scrolling to handle .js-marquee classes (custom durations) */
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marqueeReverse {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
+}
+
+/* -------------- BASE UTILITY CLASS OVERRIDES -------------- */
+
+/* Keep the user agent or tailwind-ish classes but add creative wave edges, etc. */
+.relative {
+  position: relative !important; /* ensure we can do fun clip-path if needed */
+  overflow: visible;
+}
+
+.flex {
+  display: flex !important; /* preserve typical usage */
+}
+
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  visibility: visible !important;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.invisible {
+  visibility: hidden !important;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* -------------- “CRAZY” WAVE / CLIP-PATH EFFECTS -------------- */
+
+/* Bold wave for black backgrounds */
+.bg-black {
+  background: #070612;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 80% 100%, 20% 100%, 0 90%);
+  transition: clip-path 1s ease-in-out;
+}
+.bg-black:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 60% 100%, 40% 100%, 0 85%);
+}
+
+/* Over-the-top wave for red backgrounds */
+.bg-red {
+  background: #fe0000;
+  position: relative;
+  clip-path: polygon(0 10%, 10% 0, 90% 0, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0 90%);
+  transition: clip-path 1s ease-in-out;
+}
+.bg-red:hover {
+  clip-path: polygon(0 15%, 15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%);
+}
+
+/* Slight wave for white backgrounds */
+.bg-white {
+  background-color: #fff;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%);
+  transition: clip-path 1s ease;
+}
+.bg-white:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 95%, 0 98%);
+}
+
+/* -------------- HEADINGS & TEXT STYLES -------------- */
+
+/* Title XX-Large: add a neon shadow & bigger scale on hover */
+.title-xxl,
+.text-xxl {
+  font-size: 4rem !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  text-shadow: 1px 1px 2px #fe0000, 0 0 10px #fe0000;
+  transition: transform 0.4s ease;
+}
+.title-xxl:hover,
+.text-xxl:hover {
+  animation: neonPulse 1s alternate infinite;
+  transform: scale(1.02) rotate(-2deg);
+}
+
+/* Title XL or Title M */
+.title-xl,
+.title-m {
+  transition: transform 0.6s ease;
+  overflow: visible;
+}
+.title-xl:hover,
+.title-m:hover {
+  transform: translateX(10px) rotate(-3deg) scale(1.02);
+}
+
+/* “title-spray” class can have a rotating radial background behind text */
+.title-spray {
+  position: relative;
+  display: inline-block;
+  text-shadow: 1px 1px 4px #f00, 0 0 8px #ff0; /* extra glow */
+}
+.title-spray::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%;
+  height: 250%;
+  background: radial-gradient(circle at center, rgba(255, 0, 0, 0.5), transparent 70%);
+  transform: translate(-50%, -50%) rotate(45deg);
+  z-index: -1;
+  filter: blur(10px);
+  animation: rotateGlow 20s linear infinite;
+  opacity: 0.8;
+}
+
+/* Utility for sub-headers or uline underlines in your snippet (.uline) */
+.uline,
+.uline-double {
+  position: relative;
+  cursor: pointer;
+  overflow: visible;
+}
+.uline::before,
+.uline-double::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background: linear-gradient(90deg, #fe0000, #fff000);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.75s cubic-bezier(.19,1,.22,1);
+}
+.uline:hover::before,
+.uline-double:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* -------------- MARQUEE OVERRIDES -------------- */
+
+/* For .js-marquee, .marquee, .marquee--reversed referencing snippet */
+.js-marquee,
+.marquee {
+  animation: marqueeScroll 20s linear infinite;
+  white-space: nowrap;
+}
+.marquee.--reversed {
+  animation: marqueeReverse 20s linear infinite;
+}
+
+/* -------------- BUTTON & LINK HOVER EFFECTS -------------- */
+
+/* The .btn__content from snippet */
+.btn__content {
+  position: relative;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.btn:hover .btn__content {
+  transform: translate(0.5rem, 0.5rem) rotate(1deg);
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3), inset 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* “h-spray-t” references - wavey highlight behind them */
+.h-spray-t {
+  position: relative;
+  overflow: visible;
+}
+.h-spray-t::after {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
+  background: radial-gradient(circle at center, rgba(250, 250, 0, 0.3), transparent 60%);
+  clip-path: polygon(10% 0%, 90% 0%, 100% 20%, 100% 80%, 90% 100%, 10% 100%, 0 80%, 0 20%);
+  z-index: 0;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+  transform: scale(0.8);
+  opacity: 0.5;
+}
+.h-spray-t:hover::after {
+  transform: scale(1.2);
+  opacity: 0.9;
+}
+
+/* For arrow images, let’s let them spin or tilt on hover */
+.h-spray-t img[src*="arrow"] {
+  transition: transform 0.5s ease;
+}
+.h-spray-t:hover img[src*="arrow"] {
+  transform: rotate(30deg) scale(1.1);
+}
+
+/* -------------- MISCELLANEOUS CLASSES -------------- */
+
+/* .media-fill, .media-contain: wave edges & glowing border */
+.media-fill,
+.media-contain {
+  position: relative;
+  overflow: hidden;
+  border: 4px solid rgba(255, 0, 0, 0.5);
+  border-radius: 1rem;
+  transition: border-color 0.5s ease, transform 0.5s ease;
+}
+.media-fill:hover,
+.media-contain:hover {
+  border-color: rgba(0, 255, 0, 0.7);
+  transform: scale(1.02);
+}
+
+/* .ears__ears references => bounce on hover */
+.ears__ears {
+  transition: transform 0.6s ease;
+  transform-origin: bottom center;
+}
+.ears__ears:hover {
+  transform: translateY(-10px) rotate(5deg);
+}
+
+/* .cursor-grab => show dashed outline, .cursor-none => remove cursor */
+.cursor-grab {
+  cursor: grab !important;
+  outline: 2px dashed #f0f;
+  outline-offset: -4px;
+}
+.cursor-none {
+  cursor: none !important;
+}
+
+/* .sf__media video => wave clip & neon border */
+.sf__media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 6px double #fe0000;
+  border-radius: 15px;
+  clip-path: polygon(0 0, 100% 0, 100% 95%, 75% 100%, 25% 100%, 0 95%);
+  transition: clip-path 0.7s ease, transform 0.7s ease;
+}
+.sf__media video:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 60% 100%, 40% 100%, 0 90%);
+  transform: scale(1.02);
+}
+
+/* -------------- FOOTER / EXCHANGES, etc. -------------- */
+
+/* If you want a subtle glow behind your exchange icons */
+.sf__exchange {
+  position: relative;
+  overflow: visible;
+  transition: transform 0.4s ease;
+}
+.sf__exchange:hover {
+  transform: translateY(-6px) rotate(-1deg);
+  animation: neonPulse 1s infinite;
+}
+
+/* -------------- CREATIVE SCRIPTWRITER STYLES -------------- */
+
+/* Enhanced Editor Header */
+.editor-header {
+  /* ...existing styles... */
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 90% 100%, 10% 100%, 0 85%);
+  transition: clip-path 0.5s var(--wave-timing);
+  background: linear-gradient(135deg, var(--surface-color) 0%, rgba(255,255,255,0.95) 100%);
+}
+
+.editor-header:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 80%, 85% 100%, 15% 100%, 0 80%);
+}
+
+/* Enhanced Format Buttons */
+.format-btn {
+  /* ...existing styles... */
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--wave-timing);
+}
+
+.format-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s var(--wave-timing);
+}
+
+.format-btn:hover::before {
+  left: 100%;
+}
+
+/* Enhanced Editor Container */
+.editor-container {
+  /* ...existing styles... */
+  clip-path: polygon(0 0, 100% 0, 100% 95%, 95% 100%, 5% 100%, 0 95%);
+  transition: clip-path 0.5s var(--wave-timing);
+}
+
+.editor-container:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 10% 100%, 0 90%);
+}
+
+/* Enhanced Toolbar */
+.ql-toolbar.ql-snow {
+  /* ...existing styles... */
+  background: linear-gradient(135deg, var(--background-color) 0%, rgba(255,255,255,0.95) 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 95% 100%, 5% 100%, 0 90%);
+  transition: clip-path 0.5s var(--wave-timing);
+}
+
+/* Enhanced Editor Content */
+#editor {
+  /* ...existing styles... */
+  position: relative;
+  transition: transform 0.3s var(--wave-timing);
+}
+
+#editor::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+#editor:hover::before {
+  opacity: 1;
+}
+
+/* ...rest of existing code... */

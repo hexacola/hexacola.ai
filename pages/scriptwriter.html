@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scriptwriter - HexaCola AI</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/scriptwriter.css">
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header with Navigation -->
+    <header class="main-header">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-cube"></i> HEXACOLA.AI
+        </a>
+        <nav class="main-nav">
+            <button onclick="navigateToHome()" aria-label="Go to home">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button onclick="showGenerator()" aria-label="Go to generator view">
+                <i class="fas fa-magic"></i> Generator
+            </button>
+            <button onclick="navigateToStoryboard()" aria-label="Go to storyboard view">
+                <i class="fas fa-film"></i> Storyboard
+            </button>
+            <button onclick="navigateToScriptwriter()" class="active" aria-label="Go to scriptwriter">
+                <i class="fas fa-pen-fancy"></i> Scriptwriter
+            </button>
+            <button onclick="navigateToChat()" aria-label="Go to chat">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+                <i class="fas fa-user"></i> Login
+            </button>
+            <button onclick="toggleDarkMode()" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i> 🌙
+            </button>
+        </nav>
+    </header>
+
+    <!-- Add Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-modal">
+            <span class="close" onclick="toggleLoginModal()">&times;</span>
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            </div>
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerName">Full Name:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <div class="container active">
+            <!-- Editor Header with Formatting Options -->
+            <div class="editor-header">
+                <div class="editor-title">
+                    <input type="text" id="scriptTitle" placeholder="Script Title">
+                    <span class="wip-indicator">Work in Progress...</span>
+                </div>
+                <div class="editor-actions">
+                    <!-- Script Templates Dropdown -->
+                    <select id="templateSelect">
+                        <option value="">Select Template</option>
+                        <option value="film">Film Screenplay</option>
+                        <option value="television">Television Script</option>
+                        <option value="theatre">Theatre Play</option>
+                    </select>
+                    <!-- Data Backup Buttons -->
+                    <button class="action-btn" id="backupBtn" aria-label="Backup Current Document">
+                        <i class="fas fa-save"></i> Backup
+                    </button>
+                    <button class="action-btn" id="restoreBtn" aria-label="Restore from Backup">
+                        <i class="fas fa-undo"></i> Restore
+                    </button>
+                    <button id="saveBtn" class="action-btn">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button id="exportBtn" class="action-btn">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formatting Toolbar -->
+            <div class="formatting-toolbar">
+                <button class="format-btn" data-format="scene-heading" aria-label="Format as Scene Heading">
+                    Scene Heading (Ctrl+1)
+                </button>
+                <button class="format-btn" data-format="action" aria-label="Format as Action">
+                    Action (Ctrl+2)
+                </button>
+                <button class="format-btn" data-format="character" aria-label="Format as Character">
+                    Character (Ctrl+3)
+                </button>
+                <button class="format-btn" data-format="dialogue" aria-label="Format as Dialogue">
+                    Dialogue (Ctrl+4)
+                </button>
+                <button class="format-btn" data-format="parenthetical" aria-label="Format as Parenthetical">
+                    Parenthetical (Ctrl+5)
+                </button>
+                <!-- Dropdown for Manual Formatting -->
+                <select id="manualFormatSelect">
+                    <option value="">Manual Format</option>
+                    <option value="scene-heading">Scene Heading</option>
+                    <option value="action">Action</option>
+                    <option value="character">Character</option>
+                    <option value="dialogue">Dialogue</option>
+                    <option value="parenthetical">Parenthetical</option>
+                </select>
+            </div>
+
+            <!-- Editor Container -->
+            <div class="editor-container">
+                <div id="toolbar">
+                    <!-- Quill toolbar will be inserted here -->
+                </div>
+                <div id="editor">
+                    <!-- Editor content will go here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div id="versionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Version History</h2>
+            <ul id="versionList">
+                <!-- Versions will be populated here -->
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            API Documentation:
+            <a href="https://github.com/pollinations/pollinations/blob/master/APIDOCS.md" target="_blank" rel="noopener noreferrer">Pollinations.AI</a>
+        </p>
+        <p>
+            © 2024 Tauris – hexacola.ai scriptwriter
+        </p>
+    </footer>
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="../js/scriptwriter.js"></script>
+    <script src="../js/navigation.js"></script>
+</body>
+</html>
