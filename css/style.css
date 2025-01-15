@@ -213,8 +213,9 @@ body > main,
 */
 .main-header {
   width: 100%;
-  height: clamp(3rem, 8vw, 4rem); /* NEW OR UPDATED */
-  padding: 0 clamp(1rem, 5vw, 3rem);
+  height: auto;
+  min-height: 60px;
+  padding: 10px 20px;
   position: fixed;
   top: 0;
   left: 0;
@@ -225,36 +226,31 @@ body > main,
   background-color: var(--surface-color);
   border-bottom: 1px solid var(--sidebar-border);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  contain: layout style;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow-md);
-  transition: clip-path 0.5s var(--wave-timing);
-  background: linear-gradient(135deg, var(--surface-color) 0%, rgba(255,255,255,0.95) 100%);
-  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 15% 100%, 0 85%);
-}
-
-.main-header:hover {
-  clip-path: polygon(0 0, 100% 0, 100% 80%, 90% 100%, 10% 100%, 0 80%);
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .logo {
   color: var(--primary-color);
-  font-size: clamp(1.5rem, 2vw, 1.8rem); /* NEW OR UPDATED */
+  font-size: 1.5rem;
   font-weight: bold;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 10px;
-  text-shadow: var(--neon-primary);
-  transition: text-shadow 0.3s ease;
+  white-space: nowrap;
 }
 
-.logo:hover {
-  text-shadow: var(--neon-secondary);
-  transform: scale(1.05);
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.main-nav button {
+  padding: 8px 15px;
+  white-space: nowrap;
 }
 
 /* Update main nav to ensure correct button order */
@@ -1761,114 +1757,63 @@ footer a:hover {
 
 @media (max-width: 768px) {
   .main-header {
-    /* Increased height for wrapped navigation */
-    height: clamp(4rem, 15vw, 7rem); /* NEW OR UPDATED */
-    padding: 10px 20px;
+    padding: 10px;
+    flex-direction: column;
+    height: auto;
   }
-  .main-wrapper {
-    margin-top: clamp(4rem, 15vw, 7rem);
-    min-height: calc(100vh - clamp(4rem, 15vw, 7rem) - 80px);
-  }
-  .container,
-  .library-container {
-    padding: 20px;
-  }
+
   .logo {
-    font-size: clamp(1.2rem, 6vw, 1.4rem);
-    margin-bottom: 5px;
     width: 100%;
     justify-content: center;
+    margin-bottom: 10px;
   }
+
   .main-nav {
     width: 100%;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding-bottom: 10px;
+    gap: 5px;
   }
+
   .main-nav button {
     padding: 6px 12px;
     font-size: 0.9em;
-    flex: 1;
-    min-width: 70px;
-    justify-content: center;
-  }
-  .buttons {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
-  .header {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .header h1 {
-    font-size: 1.8em;
-  }
-  .header.buttons {
-    flex-direction: column;
-    width: 100%;
-  }
-  .header.buttons button {
-    width: 100%;
-  }
-  .image-container {
-    width: 100%;
-    max-width: none;
-  }
-  .progress-container {
-    width: 95%;
-  }
-  .download-options {
-    flex-direction: column;
-  }
-  .toggle-buttons button {
-    padding: 12px 20px;
-  }
-  .generated-image {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 15px;
-  }
-  .image-container {
-    max-width: 250px;
-  }
-  .main-wrapper {
-    grid-template-columns: 1fr;
-  }
-  
-  .sidebar {
-    position: fixed;
-    left: -100%;
-    top: 60px;
-    width: 80%;
-    height: calc(100vh - 60px);
-    z-index: 1000;
-    transition: left var(--transition-normal);
-  }
-  
-  .sidebar.active {
-    left: 0;
-  }
-  
-  .generated-image {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 
+  /* Adjust main wrapper to prevent content hiding under header */
+  .main-wrapper {
+    margin-top: 120px;
+    padding: 10px;
+  }
+
+  /* Make chat more mobile-friendly */
   .chat {
-    height: calc(100vh - 310px); /* Adjusted for mobile header height */
-    margin-bottom: px; /* Add space for input and footer */
+    margin-bottom: 140px;
   }
 
   .chat-input-group {
-    padding: 15px;
     bottom: 80px;
+    padding: 10px;
   }
 
-  .container.active {
-    padding: 10px 10px 120px 10px;
-    margin-top: 110px; /* Adjusted for mobile header */
-    height: calc(100vh - 110px);
+  /* Improve mobile form elements */
+  .input-group textarea,
+  .input-group input,
+  .input-group select {
+    font-size: 16px; /* Prevents zoom on focus in iOS */
+  }
+
+  /* Better touch targets */
+  .buttons button,
+  .toggle-buttons button {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+
+  /* Adjust modal for mobile */
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+    padding: 15px;
   }
 }
 
