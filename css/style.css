@@ -3345,6 +3345,237 @@ body.dark-mode .loading-message {
 }
 
 /* Mobile Layout Fixes */
+@media screen and (max-width: 768px) {
+  /* Header Fixes */
+  .main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    padding: 10px;
+    z-index: 1000;
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--sidebar-border);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    margin: 0;
+    padding: 5px 0;
+  }
+
+  .main-nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 5px 0;
+    gap: 8px;
+  }
+
+  .main-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .main-nav button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Sidebar Adjustments */
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 90px; /* Adjusted for header height */
+    width: 80%;
+    height: calc(100vh - 90px);
+    z-index: 999;
+    transition: left 0.3s ease;
+    background: var(--surface-color);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  /* Add hamburger menu for sidebar */
+  .sidebar-toggle {
+    display: block;
+    position: fixed;
+    left: 10px;
+    top: 15px;
+    z-index: 1001;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  /* Main Content Adjustments */
+  .main-wrapper {
+    margin-top: 90px; /* Account for fixed header */
+    padding: 10px;
+    min-height: calc(100vh - 90px);
+  }
+
+  .container.active {
+    padding: 10px;
+    margin-bottom: 70px; /* Space for footer */
+  }
+
+  /* Chat Area Fixes */
+  .chat {
+    height: calc(100vh - 200px);
+    margin-bottom: 130px; /* Space for input and footer */
+  }
+
+  .chat-input-group {
+    position: fixed;
+    bottom: 70px; /* Above footer */
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: var(--surface-color);
+    border-top: 1px solid var(--sidebar-border);
+    z-index: 998;
+  }
+
+  /* Footer Improvements */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    background: var(--surface-color);
+    z-index: 997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Additional Mobile Optimizations */
+@media screen and (max-width: 480px) {
+  .main-header {
+    padding: 8px;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .main-nav button {
+    padding: 6px 10px;
+    font-size: 0.85em;
+  }
+
+  .sidebar {
+    width: 85%;
+  }
+
+  .chat-message {
+    max-width: 85%;
+    font-size: 0.9em;
+  }
+
+  .chat-input-group {
+    padding: 8px;
+  }
+
+  .chat-input-group input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Safe Area Insets for Modern Devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .main-header {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-left: max(10px, env(safe-area-inset-left));
+  }
+
+  .chat-input-group {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  footer {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .sidebar {
+    height: calc(100vh - 90px - env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Landscape Mode Optimizations */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  .main-header {
+    flex-direction: row;
+    padding: 5px 15px;
+    min-height: 50px;
+  }
+
+  .logo {
+    margin-right: 15px;
+  }
+
+  .main-nav {
+    justify-content: flex-end;
+  }
+
+  .sidebar {
+    top: 50px;
+    height: calc(100vh - 50px);
+  }
+
+  .main-wrapper {
+    margin-top: 50px;
+  }
+
+  .chat {
+    height: calc(100vh - 160px);
+  }
+}
+
+/* Add overlay when sidebar is active */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Mobile Layout Fixes */
 @media screen and (max-width: 480px) {
   /* Header fixes */
   .main-header {
@@ -3820,4 +4051,71 @@ body.dark-mode .loading-message {
     background: var(--surface-color-dark);
     color: var(--text-color);
     border-color: var(--border-color-dark);
+}
+
+/* Mobile Navigation Enhancements */
+.sidebar-toggle {
+    display: none; /* Hidden by default on desktop */
+    position: fixed;
+    left: 15px;
+    top: 15px;
+    z-index: 1001;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(107, 142, 35, 0.1);
+}
+
+/* Show sidebar toggle on mobile */
+@media screen and (max-width: 768px) {
+    .sidebar-toggle {
+        display: block;
+    }
+
+    .main-header {
+        padding-left: 60px; /* Make room for sidebar toggle */
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Safe area insets for modern devices */
+@supports (padding: env(safe-area-inset-top)) {
+    .sidebar-toggle {
+        top: max(15px, env(safe-area-inset-top));
+        left: max(15px, env(safe-area-inset-left));
+    }
 }
