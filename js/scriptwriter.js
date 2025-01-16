@@ -150,6 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const range = quill.getSelection(true);
         const currentPosition = range ? range.index : quill.getLength();
 
+        // Check if current line already has the same format
+        const [currentLine] = quill.getLine(currentPosition);
+        const currentFormat = currentLine?.domNode?.getAttribute('data-format');
+        
+        if (currentFormat === formatType && currentLine.text().trim() === '') {
+            return; // Prevent duplicate formatting on empty lines
+        }
+
         // Add proper spacing before element
         if (currentPosition > 0) {
             const [previousLine] = quill.getLine(currentPosition - 1);
@@ -324,12 +332,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Enhanced keyboard shortcut handler
     function handleKeyboardShortcuts(e) {
-        // Prevent default browser shortcuts when using our format shortcuts
-        if (e.ctrlKey && SHORTCUTS[e.key]) {
-            e.preventDefault();
-            e.stopPropagation();
-            applyFormat(SHORTCUTS[e.key]);
-            return false;
+        // Only handle if Ctrl is pressed without Shift or Alt
+        if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+            const key = e.key;
+            if (SHORTCUTS[key]) {
+                e.preventDefault();
+                e.stopPropagation();
+                applyScriptFormat(quill, SHORTCUTS[key]);
+                return false;
+            }
         }
     }
 
@@ -344,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notification.remove();
         }, 3000);
     }
+    window.showNotification = showNotification;
 
     // Smart Format Detection
     function detectScriptElement(text) {
@@ -379,6 +391,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!element) return;
 
         const range = quill.getSelection(true);
+        if (!range) return;
+        
+        // Check for existing format to prevent duplication
+        const [line] = quill.getLine(range.index);
+        const existingFormat = line?.domNode?.getAttribute('data-format');
+        // Fix: Use getText() instead of text()
+        const existingText = line ? quill.getText(line.offset(), line.length()) : '';
+
+        // Only apply format if it's different or there's new text
+        if (existingFormat === formatType && existingText.trim() === '' && !customText) {
+            return;
+        }
+
         const position = range ? range.index : quill.getLength();
         
         // Add newline if not at document start
@@ -466,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Smart Enter Key Handling
+    // Smart Enter Key Handling - Modified to fix duplication
     function handleEnterKey(quill) {
         const range = quill.getSelection();
         if (!range) return;
@@ -475,19 +500,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = line.text();
         const currentFormat = detectScriptElement(text);
 
-        // Determine next element based on context
+        // Clear current line if it's empty to prevent duplication
+        if (text.trim() === '') {
+            quill.deleteText(range.index - 1, 1);
+            return;
+        }
+
+        // Prevent duplication by checking if next line already exists
+        const [nextLine] = quill.getLine(range.index + 1);
+        if (nextLine) {
+            const nextText = nextLine.text();
+            if (nextText.trim() !== '') {
+                // If next line has content, just add a new line
+                quill.insertText(range.index + 1, '\n');
+                return;
+            }
+        }
+
+        // Modified next format determination
         let nextFormat;
         switch (currentFormat) {
             case 'scene-heading':
                 nextFormat = 'action';
                 break;
             case 'action':
-                nextFormat = text.length < 3 ? 'scene-heading' : 'character';
+                // Only go to character if the line has content
+                nextFormat = text.trim().length > 3 ? 'character' : 'action';
                 break;
             case 'character':
                 nextFormat = 'dialogue';
                 break;
             case 'dialogue':
+                // Check if there's a parenthetical, if not go to character
                 nextFormat = 'character';
                 break;
             case 'parenthetical':
@@ -500,7 +544,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 nextFormat = 'action';
         }
 
-        applyScriptFormat(quill, nextFormat);
+        // Apply format with empty text to prevent duplication
+        applyScriptFormat(quill, nextFormat, '');
     }
 
     // Initialize Screenplay Features
@@ -528,4 +573,326 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
     }, true);
+
+    // Initialize AI suggestions
+    const aiSuggestions = new AISuggestionHandler(quill);
+    aiSuggestions.loadSettings();
 });
+
+// Updated AI Suggestion Handler with fixed format handling
+class AISuggestionHandler {
+    constructor(quill) {
+        if (!quill) throw new Error('Quill editor instance is required');
+
+        this.quill = quill;
+        this.enabled = true;
+        this.currentSuggestion = null;
+        this.suggestionTimeout = null;
+        this.loadingIndicator = null;
+
+        // Updated API configuration for Pollinations.AI
+        this.apiEndpoint = 'https://text.pollinations.ai/v1/chat/completions';
+        this.model = 'deepseek'; // Using deepseek model as specified in APIDOCS
+        this.systemPrompt = `You are a professional scriptwriter assistant. 
+            Based on the current context, provide brief, relevant suggestions 
+            for the next line of the screenplay. Keep suggestions concise and 
+            match the current format (scene heading, action, dialogue, etc).`;
+
+        // Update toggle button state from localStorage
+        this.enabled = localStorage.getItem('aiSuggestionsEnabled') !== 'false';
+        
+        // Initialize settings and UI
+        this.settings = this.loadSettings();
+        this.initializeUI();
+        this.bindHandlers();
+
+        // Add loading indicator to the editor
+        this.createLoadingIndicator();
+    }
+
+    createLoadingIndicator() {
+        this.loadingIndicator = document.createElement('div');
+        this.loadingIndicator.className = 'suggestion-loading';
+        this.loadingIndicator.innerHTML = `
+            <span>AI thinking</span>
+            <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        `;
+        this.quill.container.appendChild(this.loadingIndicator);
+    }
+
+    async generateSuggestion(text, format) {
+        if (!this.enabled || !text) return null;
+
+        try {
+            this.showLoadingIndicator();
+
+            // Get previous context (last few lines)
+            const context = this.getEditorContext();
+            
+            const response = await fetch(this.apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: this.model,
+                    messages: [
+                        { role: 'system', content: this.systemPrompt },
+                        { role: 'user', content: `Format: ${format}\nPrevious context: ${context}\nCurrent line: ${text}\nProvide a natural continuation or suggestion for the next line:` }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 100
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const suggestion = data.choices[0].message.content.trim();
+
+            this.hideLoadingIndicator();
+            return suggestion;
+
+        } catch (error) {
+            console.error('AI Suggestion error:', error);
+            this.hideLoadingIndicator();
+            this.showError('Failed to generate suggestion');
+            return null;
+        }
+    }
+
+    showLoadingIndicator() {
+        this.loadingIndicator.classList.add('visible');
+    }
+
+    hideLoadingIndicator() {
+        this.loadingIndicator.classList.remove('visible');
+    }
+
+    displaySuggestion(suggestion, index) {
+        if (!suggestion || typeof index !== 'number') return;
+
+        this.removeSuggestion();
+
+        try {
+            // Create ghost text element
+            const ghostText = document.createElement('div');
+            ghostText.className = 'ghost-text';
+            ghostText.textContent = suggestion;
+
+            // Position the ghost text
+            const [line] = this.quill.getLine(index);
+            const lineRect = line.domNode.getBoundingClientRect();
+            const editorRect = this.quill.container.getBoundingClientRect();
+
+            ghostText.style.top = `${lineRect.bottom - editorRect.top}px`;
+            ghostText.style.left = `${lineRect.left - editorRect.left + lineRect.width}px`;
+
+            // Add to editor
+            this.quill.container.appendChild(ghostText);
+
+            // Store suggestion data
+            this.currentSuggestion = {
+                text: suggestion,
+                index: index,
+                element: ghostText
+            };
+
+            // Add keyboard hint
+            const tooltip = document.createElement('div');
+            tooltip.className = 'suggestion-tooltip';
+            tooltip.textContent = 'Press Tab to accept';
+            ghostText.appendChild(tooltip);
+
+        } catch (error) {
+            console.error('Error displaying suggestion:', error);
+        }
+    }
+
+    acceptSuggestion() {
+        if (!this.currentSuggestion) return false;
+
+        try {
+            // Insert the suggestion text
+            this.quill.insertText(
+                this.currentSuggestion.index,
+                this.currentSuggestion.text,
+                'user'
+            );
+
+            // Clean up
+            if (this.currentSuggestion.element) {
+                this.currentSuggestion.element.remove();
+            }
+
+            // Move cursor to end of inserted text
+            const newPosition = this.currentSuggestion.index + this.currentSuggestion.text.length;
+            this.quill.setSelection(newPosition, 0);
+
+            this.currentSuggestion = null;
+            return true;
+
+        } catch (error) {
+            console.error('Error accepting suggestion:', error);
+            return false;
+        }
+    }
+
+    showError(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification error';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    initializeUI() {
+        const toggleBtn = document.getElementById('toggleSuggestions');
+        const panel = document.querySelector('.settings-panel');
+        
+        if (toggleBtn) {
+            toggleBtn.classList.toggle('active', this.enabled);
+            toggleBtn.setAttribute('aria-pressed', this.enabled);
+            toggleBtn.innerHTML = `
+                <i class="fas fa-lightbulb"></i> 
+                AI Suggestions ${this.enabled ? 'On' : 'Off'}
+            `;
+        }
+        
+        if (panel) {
+            panel.classList.add('hidden');
+            
+            // Initialize checkboxes
+            const checkboxes = panel.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const format = checkbox.value;
+                checkbox.checked = this.settings.enabledTypes.has(format);
+            });
+        }
+    }
+
+    setupHandlers() {
+        // Toggle button handler
+        const toggleBtn = document.getElementById('toggleSuggestions');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleSuggestions();
+            });
+
+            // Show settings panel on right-click
+            toggleBtn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleSettingsPanel();
+            });
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const panel = document.querySelector('.settings-panel');
+            const toggleBtn = document.getElementById('toggleSuggestions');
+            if (panel && toggleBtn && !panel.contains(e.target) && !toggleBtn.contains(e.target)) {
+                panel.classList.add('hidden');
+            }
+        });
+
+        // Rest of the handlers...
+    }
+
+    toggleSuggestions() {
+        this.enabled = !this.enabled;
+        localStorage.setItem('aiSuggestionsEnabled', this.enabled);
+
+        const toggleBtn = document.getElementById('toggleSuggestions');
+        if (toggleBtn) {
+            toggleBtn.classList.toggle('active', this.enabled);
+            toggleBtn.setAttribute('aria-pressed', this.enabled);
+            toggleBtn.innerHTML = `
+                <i class="fas fa-lightbulb"></i> 
+                AI Suggestions ${this.enabled ? 'On' : 'Off'}
+            `;
+        }
+
+        // Show feedback
+        this.showNotification(
+            `AI Suggestions ${this.enabled ? 'enabled' : 'disabled'}`,
+            this.enabled ? 'success' : 'info'
+        );
+
+        // If disabled, remove any current suggestions
+        if (!this.enabled) {
+            this.removeSuggestion();
+        }
+    }
+
+    toggleSettingsPanel() {
+        const panel = document.querySelector('.settings-panel');
+        if (panel) {
+            panel.classList.toggle('hidden');
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Define the loadSettings method
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem('aiSuggestionSettings');
+            return saved ? JSON.parse(saved) : this.defaultSettings;
+        } catch (error) {
+            console.error('Failed to load settings:', error);
+            return this.defaultSettings;
+        }
+    }
+
+    saveSettings() {
+        try {
+            localStorage.setItem('aiSuggestionSettings', JSON.stringify(this.settings));
+            localStorage.setItem('aiSuggestionsEnabled', this.enabled);
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+        }
+    }
+
+    // ... rest of existing AISuggestionHandler methods ...
+}
+
+// Add CSS for ghost text and tooltip
+const style = document.createElement('style');
+style.textContent = `
+    .ghost-text {
+        font-family: 'Courier Prime', monospace;
+        font-size: 12pt;
+        background: transparent;
+        z-index: 1000;
+    }
+    
+    .suggestion-tooltip {
+        background: #333;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+`;
+document.head.appendChild(style);
