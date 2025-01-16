@@ -94,6 +94,9 @@ html, body {
 
 .hidden {
   display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .visible {
@@ -1007,6 +1010,313 @@ html, body {
     .format-btn:focus {
         outline: 2px solid Highlight;
     }
+}
+
+/* ...rest of existing code... */
+
+/* AI Suggestion Styles */
+.suggestion-settings {
+    position: relative;
+    margin: 10px 0;
+}
+
+/* Single settings panel style */
+.settings-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--sidebar-border);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    min-width: 250px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.settings-panel.hidden {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.setting-group {
+    margin: 10px 0;
+}
+
+.setting-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* AI Suggestion Text */
+.ql-editor .suggestion {
+    opacity: 0.7;
+    color: #666;
+    background: rgba(107, 142, 35, 0.1);
+    border-radius: 2px;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+}
+
+.ql-editor .suggestion:hover {
+    opacity: 0.9;
+    background: rgba(107, 142, 35, 0.15);
+}
+
+.ql-editor .suggestion.accepted {
+    opacity: 1;
+    background: none;
+}
+
+/* Suggestion Loading Indicator */
+.suggestion-loading {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.suggestion-loading.visible {
+    opacity: 1;
+}
+
+.suggestion-loading .dots {
+    display: flex;
+    gap: 3px;
+}
+
+.suggestion-loading .dot {
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: dotPulse 1.5s infinite;
+}
+
+.suggestion-loading .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.suggestion-loading .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+}
+
+/* ...rest of existing styles... */
+
+/* AI Suggestion Styles */
+.ql-editor [data-suggestion="true"] {
+    opacity: 0.5;
+    color: var(--text-color);
+    background: rgba(107, 142, 35, 0.1);
+    border-radius: 3px;
+    padding: 0 3px;
+    transition: opacity 0.3s ease;
+}
+
+.ql-editor .has-suggestion::after {
+    content: '⌨';
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 8px;
+    opacity: 0.5;
+}
+
+.suggestion-loading {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* ...rest of existing styles... */
+
+/* AI Suggestion Toggle Button */
+#toggleSuggestions {
+    position: relative;
+    z-index: 1001;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid var(--primary-color);
+    background: var(--surface-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#toggleSuggestions.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#toggleSuggestions:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#toggleSuggestions i {
+    transition: transform 0.3s ease;
+}
+
+#toggleSuggestions.active i {
+    transform: rotate(180deg);
+}
+
+/* Ghost Text Styles */
+.ghost-text {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.6;
+    color: var(--text-muted);
+    background: linear-gradient(
+        to right,
+        rgba(107, 142, 35, 0.1),
+        transparent
+    );
+    transition: opacity 0.3s ease;
+    padding: 0 3px;
+    border-radius: 3px;
+}
+
+.ghost-text:hover {
+    opacity: 0.8;
+}
+
+/* Suggestion Tooltip */
+.suggestion-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    transform: translateY(-100%);
+    margin-top: -4px;
+    pointer-events: none;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* ...existing code... */
+
+/* AI Suggestion Improvements */
+.ghost-text {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.6;
+    color: #666;
+    background: linear-gradient(
+        to right,
+        rgba(107, 142, 35, 0.1),
+        transparent
+    );
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12pt;
+    white-space: pre-wrap;
+    z-index: 1000;
+}
+
+.suggestion-loading {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 12px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.suggestion-loading.visible {
+    opacity: 1;
+}
+
+.suggestion-loading .dots {
+    display: flex;
+    gap: 4px;
+}
+
+.suggestion-loading .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    animation: dotPulse 1.5s infinite;
+}
+
+.suggestion-tooltip {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Settings Panel Improvements */
+.settings-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    min-width: 280px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-panel.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
 }
 
 /* ...rest of existing code... */
