@@ -7,25 +7,38 @@
  *    by adding checks in fetchWithRetry & fetchAIResponse.
  * 3) 404 for "hexacola-chat.png" is just a missing file
  *    (place the file or remove the reference in HTML).
+ *
+ * This file handles the core logic for the chat application. 
+ * It manages user input, interacts with the AI, stores chat 
+ * history, and handles various UI updates.
  *******************************************************/
 
 /*******************************************************
  * Chat History and Response Caching
  *******************************************************/
+// `chatHistory` stores all user and AI messages in an array.
 let chatHistory = [];
+// `responseCache` stores AI responses to avoid generating the same response multiple times. (Not currently used)
 const responseCache = {};
 
 /*******************************************************
  * API Configuration
  *******************************************************/
+// This section defines all the settings needed for making calls to the AI API.
 const API_CONFIG = {
+  // `baseUrl` is the URL where the AI service is hosted. Make sure this is correct!
   baseUrl: 'https://text.pollinations.ai/', // Ensure this is correct or point to your chosen AI endpoint
+  // `headers` include the format of the data being sent, JSON
   headers: {
     'Content-Type': 'application/json',
   },
+  //`timeout` sets a limit on how long the system will wait for a response.
   timeout: 30000, // 30 second timeout
+  // `retryDelay` is the starting delay in milliseconds for when a request fails and needs to be retried.
   retryDelay: 1000, // Base delay between retries
+  // `maxRetries` sets the maximum number of attempts to make on a failed request.
   maxRetries: 3,
+    // `errorMessages` provides user-friendly messages for various API errors.
   errorMessages: {
     400: 'Invalid request. Please check your input.',
     401: 'Authentication failed. Please check your credentials.',
@@ -43,6 +56,7 @@ const API_CONFIG = {
 /*******************************************************
  * Base Prompt Generator
  *******************************************************/
+// This function creates the base instruction set (prompt) for the AI
 function generateBasePrompt() {
     return `
 YOU ARE HEXACOLA.AI — AN ADVANCED, ARTISTIC, AND KNOWLEDGEABLE AI WITH PERFECT MEMORY RECALL.
@@ -119,7 +133,8 @@ EXAMPLES OF YOUR RESPONSES:
 Your goal is to help the user understand and learn while keeping things simple and engaging.`;
 }
 
-// Replace the basePrompt constant with a getter
+// `getBasePrompt` is a getter function. It calls `generateBasePrompt` to get the prompt
+// every time it's needed. This ensures the prompt is always up-to-date
 const getBasePrompt = () => generateBasePrompt();
 
 /*******************************************************
@@ -127,54 +142,64 @@ const getBasePrompt = () => generateBasePrompt();
  * Merges the basePrompt + chatHistory + the new user
  * message into one final messages array.
  *******************************************************/
+// This function takes the user's input and creates the final message for the AI
 async function composePrompt(userMessage) {
+  // Analyze the user's message to determine the intent
   const analysis = analyzeMessage(userMessage);
+  // Get the recent conversation context
   const context = chatHistoryManager.getRecentContext();
+  // Get the previous user-assistant exchange
   const previousExchange = chatHistoryManager.getPreviousExchange();
   
+  // Get the base prompt from the generator
   let systemPrompt = getBasePrompt(); // Use the getter instead of constant
   
   // Add context awareness
+  // If the user wants to improve the previous response, add instructions for that
   if (analysis.context === 'improve_previous' && previousExchange) {
     systemPrompt += `\nThe user wants to improve this previous text: "${previousExchange.assistantResponse}"\nPlease provide an enhanced version with better grammar, clarity, and style.`;
   }
 
   // Add grammar check instruction
+  // If user specifically asked for a grammar check, add instructions for that
   if (analysis.isGrammarCheck) {
     systemPrompt += '\nPlease check grammar and suggest improvements. Point out specific issues and provide corrections.';
   }
 
   // Add specific instruction based on message complexity
+  // If the message is complex, we need to remind the AI to give structured responses
   if (analysis.complexity === 'complex') {
     systemPrompt += '\nThis is a detailed request. Please break down your response into clear sections.';
   }
-
+  // Combine the system prompt (instructions), the conversation history, and user message into one array
   const messages = [
     { role: 'system', content: systemPrompt },
     ...context.messages.slice(-CONTEXT_WINDOW_SIZE), // Include recent messages
     { role: 'user', content: userMessage }
   ];
 
+  // Return the final array
   return messages;
 }
 
 /*******************************************************
  * Chat Logic & Reasoning Data
  *******************************************************/
+// This section stores all dynamic data related to chat logic and response reasoning.
 const reasoningData = {
-  currentStep: null,
-  results: {},
-  errors: [],
-  isIncomplete: false,
-  lastMessageId: null,
-  currentMessage: '',
-  messageContext: null,
-  currentReason: null,
-  lastImprovement: null,
-  improvementCount: 0,
-  grammarIssues: [],
-  contextualHints: [],
-  thinkingSteps: []
+  currentStep: null, // Current AI thinking step
+  results: {}, //  Stores results from previous steps
+  errors: [], // Stores any errors that occur during the process
+  isIncomplete: false, // Track if the AI response has been truncated
+  lastMessageId: null, // The ID of the last incomplete message
+  currentMessage: '', // Store the text of a current message
+  messageContext: null, // Stores time based context for current message
+  currentReason: null, // Stores the reason for the current prompt
+  lastImprovement: null,  // Stores the result of the last improvement request
+  improvementCount: 0,  // Track how many improvements have been requested
+  grammarIssues: [], // Stores a list of grammatical issues
+  contextualHints: [], // Stores contextual hints relevant to the conversation
+  thinkingSteps: [] // Stores the sequence of steps the AI follows while thinking
 };
 
 /*******************************************************
@@ -182,15 +207,19 @@ const reasoningData = {
  * 
  * Ensures we handle server or network failures gracefully.
  *******************************************************/
+// This function sends a request to the AI and retries if the request fails.
 async function fetchWithRetry(url, options, maxRetries = API_CONFIG.maxRetries, delayMs = API_CONFIG.retryDelay) {
+  // `lastError` will store the last error, if any.
   let lastError;
-  
-  // Add timeout to fetch
+    
+  // Add timeout to fetch using AbortController
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
-  
+    
+    // Start a loop to retry the request if it fails.
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      // Send the request to the AI endpoint.
       const response = await fetch(url, {
         ...options,
         signal: controller.signal
@@ -199,44 +228,46 @@ async function fetchWithRetry(url, options, maxRetries = API_CONFIG.maxRetries, 
       // Clear timeout if fetch completes
       clearTimeout(timeoutId);
 
+      // Check if the request was successful (status 200)
       if (!response.ok) {
+        // Use the friendly error message or a default
         const errorMessage = API_CONFIG.errorMessages[response.status] || API_CONFIG.errorMessages.default;
         lastError = new Error(errorMessage);
         
-        // Don't retry client errors except 429
+         // Don't retry client errors except 429
         if (response.status !== 429 && response.status < 500) {
           break;
         }
         
-        // Exponential backoff for retries
+        // Exponential backoff for retries: wait longer on each attempt.
         await new Promise(res => setTimeout(res, delayMs * Math.pow(2, attempt - 1)));
         continue;
       }
 
+      // If the request was successful, return the response
       return response;
 
     } catch (error) {
-      clearTimeout(timeoutId);
-      
-      // Handle specific error types
+        clearTimeout(timeoutId);
+       // Handle specific error types
       if (error.name === 'AbortError') {
         throw new Error(API_CONFIG.errorMessages.TIMEOUT);
       }
-      
+            
       lastError = new Error(
         error.message === 'Failed to fetch' 
           ? API_CONFIG.errorMessages.NETWORK 
           : error.message
       );
-
+      // If max retries are reached, stop retrying.
       if (attempt === maxRetries) break;
-      
+            
       // Exponential backoff for retries
       await new Promise(res => setTimeout(res, delayMs * Math.pow(2, attempt - 1)));
     }
   }
 
-  // If we exhausted all attempts, throw lastError
+  // If all retries failed, throw the last error.
   throw lastError;
 }
 
@@ -246,15 +277,19 @@ async function fetchWithRetry(url, options, maxRetries = API_CONFIG.maxRetries, 
  * Takes the final messages array (basePrompt + history
  * + user message) and calls our AI endpoint.
  *******************************************************/
+// This function takes the generated messages and sends them to the AI for a response.
 async function fetchAIResponse(messages) {
+  // Check to make sure that the messages are a valid array
   if (!messages || !Array.isArray(messages)) {
     throw new Error('Invalid messages format');
   }
 
   try {
+      // Fetch selected model
     const modelSelect = document.getElementById('modelSelect');
     const selectedModel = modelSelect ? modelSelect.value : 'default';
 
+    // Call the `fetchWithRetry` function
     const response = await fetchWithRetry(API_CONFIG.baseUrl, {
       method: 'POST',
       headers: API_CONFIG.headers,
@@ -264,7 +299,7 @@ async function fetchAIResponse(messages) {
       })
     });
 
-    // Parse response
+    // Parse response text
     let textData;
     try {
       textData = await response.text();
@@ -273,15 +308,16 @@ async function fetchAIResponse(messages) {
       throw new Error('Failed to parse AI response');
     }
 
+    // Check if the response is empty
     if (!textData) {
       throw new Error('Empty response from AI service');
     }
-
+      // Return the text response from the AI
     return textData;
 
   } catch (error) {
     console.error('Error in fetchAIResponse:', error);
-    
+        
     // Convert error to user-friendly message
     const errorMessage = error.message.includes('Failed to fetch')
       ? 'Unable to reach AI service. Please check your connection.'
@@ -294,17 +330,24 @@ async function fetchAIResponse(messages) {
 /*******************************************************
  * sendMessage - Main function for user input
  *******************************************************/
+// This is the main function that is called when the user sends a message.
 async function sendMessage() {
+  // Get the chat input element
   const chatInput = document.getElementById('chatInput');
+  // Get the user's message
   const message = chatInput.value.trim();
+  // If the message is empty, don't do anything.
   if (!message) return;
-
+    
+    // Clear the chat input area
   try {
     chatInput.value = '';
+      // Analyze the user's message to determine its intent
     const analysis = analyzeMessage(message);
+      // Get the conversation context for a new message
     const context = chatHistoryManager.getRecentContext();
     
-    // Show appropriate thinking animation
+    // Show appropriate thinking animation based on analysis
     if (analysis.context === 'improve_previous') {
       showThinkingSteps('Improving previous response...');
     } else if (analysis.isGrammarCheck) {
@@ -312,28 +355,35 @@ async function sendMessage() {
     } else {
       showThinkingSteps(context.summary?.lastUserQuery ? 'Continuing conversation...' : 'Starting new conversation...');
     }
-
+      // Update local history with user message
     updateChatHistory('user', message);
+    // Show the user's message on the chat interface
     appendMessage('user', message);
 
+    // Generate the complete AI prompt.
     const finalPrompt = await composePrompt(message);
+      // Fetch response from the AI.
     let response = await fetchAIResponse(finalPrompt);
 
     // Enhance response with personal context
     response = aiMemoryManager.enhanceResponse(response);
 
     // Track improvements
-    if (analysis.isImprovement) {
+      if (analysis.isImprovement) {
       reasoningData.lastImprovement = response;
       reasoningData.improvementCount++;
     }
 
+    // Removes thinking animation
     removeThinkingProcess();
+      // Update local chat history with AI response
     updateChatHistory('assistant', response);
+    // Display the AI response in the chat area.
     appendMessage('assistant', response);
 
-    // Save memory and context
+    // Save memory and context to local storage
     aiMemoryManager.saveMemory(message, response);
+      // Store chat history in local storage
     localStorage.setItem(MESSAGE_HISTORY_KEY, JSON.stringify(chatHistoryManager.getRecentContext()));
 
   } catch (error) {
@@ -346,36 +396,43 @@ async function sendMessage() {
 /*******************************************************
  * Helper: Show "thinking" steps
  *******************************************************/
+ // This function shows a visual "thinking" animation while the AI is processing a request
 async function showThinkingSteps(contextMessage = 'Processing request...') {
+  // Create main thinking container
   const thinkingContainer = document.createElement('div');
   thinkingContainer.className = 'thinking-container';
-  
+    
+  // Create icon container
   const thinkingIcon = document.createElement('div');
   thinkingIcon.className = 'thinking-icon';
-  
+    
   // Add thinking dots
   for (let i = 0; i < 3; i++) {
     const dot = document.createElement('div');
     dot.className = 'thinking-dot';
     thinkingIcon.appendChild(dot);
   }
-  
+  // Create text container
   const thinkingText = document.createElement('div');
   thinkingText.className = 'thinking-text';
-  
+    
   const thinkingStatus = document.createElement('span');
   thinkingStatus.textContent = 'Hexacola is thinking';
-  
+    
   const messageText = document.createElement('span');
   messageText.textContent = contextMessage;
-  
+    
+    // Add elements to the text container
   thinkingText.appendChild(thinkingStatus);
   thinkingText.appendChild(messageText);
   
+    // Add the icon and text to the main container
   thinkingContainer.appendChild(thinkingIcon);
   thinkingContainer.appendChild(thinkingText);
   
+  // Get the chat container
   const chat = document.getElementById('chat');
+    // Append thinking container
   chat.appendChild(thinkingContainer);
   
   // Update thinking status periodically
@@ -395,7 +452,8 @@ async function showThinkingSteps(contextMessage = 'Processing request...') {
   
   // Store the interval ID for cleanup
   thinkingContainer.dataset.intervalId = statusInterval;
-  
+    
+    // Keep scrollbar to bottom
   chat.scrollTop = chat.scrollHeight;
   return thinkingContainer;
 }
@@ -403,10 +461,13 @@ async function showThinkingSteps(contextMessage = 'Processing request...') {
 /*******************************************************
  * removeThinkingProcess
  *******************************************************/
+// Removes the thinking animation once the AI has responded.
 function removeThinkingProcess() {
+  // Gets the thinking container
   const thinkingContainer = document.querySelector('.thinking-container');
+  // If a container is found
   if (thinkingContainer) {
-    // Clear the status update interval
+      // Clear the interval
     clearInterval(thinkingContainer.dataset.intervalId);
     
     // Add removing animation
@@ -421,33 +482,42 @@ function removeThinkingProcess() {
 /*******************************************************
  * appendMessage - Display a message in the chat area
  *******************************************************/
+// This function adds a message to the chat area.
 function appendMessage(role, content) {
+    // Gets the main chat container
   const chat = document.getElementById('chat');
+  // Creates a new div for the message
   const messageDiv = document.createElement('div');
+  // Adds CSS classes to the message for styling
   messageDiv.classList.add('chat-message', role);
 
-  // Generate a unique ID
+    // Generate a unique ID for each message
   const messageId = Date.now().toString();
   messageDiv.setAttribute('data-message-id', messageId);
 
+  // Store the message in the reasoning data if from assistant
   if (role === 'assistant') {
     reasoningData.currentMessage = content;
-    reasoningData.messageContext = { messageId, timestamp: Date.now() };
+      reasoningData.messageContext = { messageId, timestamp: Date.now() };
   }
-
+  // Format content to add styling if needed
   const formattedContent = formatMessage(content);
+    // Set the inner HTML of the div to show message
   messageDiv.innerHTML = formattedContent;
+  // Adds message to the chat
   chat.appendChild(messageDiv);
+  // Ensure the new message is visible by scrolling the chat
   chat.scrollTop = chat.scrollHeight;
 
-  // Check if response might be incomplete
+  // Check if the message is likely to be incomplete
   if (role === 'assistant' && (content.endsWith('...') || content.length >= 500)) {
     reasoningData.isIncomplete = true;
     reasoningData.lastMessageId = messageId;
+    // If message is incomplete, append continue button
     appendContinueButton(messageDiv);
   }
 
-  // Syntax highlighting
+  // Highlight code syntax if prism.js is loaded
   if (typeof Prism !== 'undefined') {
     Prism.highlightAllUnder(messageDiv);
   }
@@ -456,17 +526,18 @@ function appendMessage(role, content) {
 /*******************************************************
  * formatMessage - Basic Markdown + Sanitization
  *******************************************************/
+// This function takes message text and formats it using HTML and sanitizes it.
 function formatMessage(content) {
-  // We'll do a minimal version here
+  // Check if the message is valid.
   if (!content) return '';
-
-  // If DOMPurify is available
-  if (typeof DOMPurify !== 'undefined') {
-    content = DOMPurify.sanitize(content);
-  }
+    
+    // If DOMPurify is available, sanitize the content
+    if (typeof DOMPurify !== 'undefined') {
+      content = DOMPurify.sanitize(content);
+    }
 
   // Convert markdown-like syntax to HTML
-  // e.g. **bold** => <strong>bold</strong>, etc.
+    // e.g., **bold** becomes <strong>bold</strong>, *italic* becomes <em>italic</em>
   content = content
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -476,12 +547,14 @@ function formatMessage(content) {
     })
     .replace(/`([^`]+)`/g, '<code>$1</code>');
 
+    // Return formatted message
   return content;
 }
 
 /*******************************************************
  * escapeHtml
  *******************************************************/
+// This function takes a piece of text and makes sure that all of the HTML tags are correctly rendered and dont cause security concerns.
 function escapeHtml(text) {
   return text
     .replaceAll('&', '&amp;')
@@ -494,6 +567,7 @@ function escapeHtml(text) {
 /*******************************************************
  * Continue Button (in case of truncated assistant messages)
  *******************************************************/
+// This function adds a "Continue" button to messages from the AI that are longer than usual, as they might be incomplete.
 function appendContinueButton(messageDiv) {
   const continueButton = document.createElement('button');
   continueButton.classList.add('continue-button');
@@ -502,29 +576,40 @@ function appendContinueButton(messageDiv) {
   messageDiv.appendChild(continueButton);
 }
 
+// This function handles continuing the AI message
 async function continueResponse() {
+  // Gets last message
   const lastMessage = document.querySelector(`[data-message-id="${reasoningData.lastMessageId}"]`);
+    // Returns if no last message
   if (!lastMessage) return;
+    // Get the continue button
   const continueButton = lastMessage.querySelector('.continue-button');
+    // Removes the button
   if (continueButton) continueButton.remove();
 
   try {
+      // Create a context for response
     const continuationContext = {
       previousContent: reasoningData.currentMessage,
       lastContext: reasoningData.messageContext
     };
 
+    // Show "thinking" animation
     showThinkingSteps();
 
     // We'll just do a naive approach: "Continue from previous" system message
     const finalPrompt = await composePrompt('continue from previous response');
+      // Get response from the AI
     const data = await fetchAIResponse(finalPrompt);
-
+      // Removes thinking animation
     removeThinkingProcess();
 
+      // Combines the previous response with the new one
     reasoningData.currentMessage += data;
+    // Displays complete text
     lastMessage.innerHTML = formatMessage(reasoningData.currentMessage);
-
+      
+      // Check if response is still too long
     if (data.endsWith('...') || data.length >= 500) {
       appendContinueButton(lastMessage);
     } else {
@@ -543,28 +628,36 @@ async function continueResponse() {
 /*******************************************************
  * Chat History Manager
  *******************************************************/
+// This object manages the chat history including storing, retreiving and manipulating messages and metadata.
 const chatHistoryManager = {
+  // Stores all chat messages
   history: [],
+    // stores conversation metadata
   metadata: {
     firstInteraction: null,
     lastInteraction: null,
     commonTopics: new Set(),
     userPreferences: new Map()
   },
-
+    // Stores user's last text that was improved
   lastImprovedText: null,
+  // Counts how many time a user requests an improvement of text
   improvementCount: 0,
 
-  addMessage(role, content) {
-    const timestamp = Date.now();
-    const topics = this.extractTopics(content);  // ensures array
+  // Add a new message to the chat history.
+    addMessage(role, content) {
+        // Store the current timestamp for the message
+      const timestamp = Date.now();
+        // extract topics for context
+      const topics = this.extractTopics(content);
 
-    const message = {
-      role,
-      content,
-      timestamp,
-      topics
-    };
+        // Creates a message object
+      const message = {
+        role,
+        content,
+        timestamp,
+        topics
+      };
 
     // Track first/last interactions
     if (!this.metadata.firstInteraction) {
@@ -572,14 +665,16 @@ const chatHistoryManager = {
     }
     this.metadata.lastInteraction = message;
 
-    // Safely loop over topics (which is an array now)
+        // Add topics to the metadata
     topics.forEach(topic => this.metadata.commonTopics.add(topic));
-
-    this.history.push(message);
-    this.save();
+        // Add message to the history
+      this.history.push(message);
+        // save history
+      this.save();
     return message;
   },
 
+  // Extracts topics from message content
   extractTopics(content) {
     // Always returns an array
     if (!content || typeof content !== 'string') return [];
@@ -587,6 +682,7 @@ const chatHistoryManager = {
     return [...new Set(words)];
   },
 
+    // Returns context data
   getConversationContext() {
     return {
       firstMessage: this.metadata.firstInteraction,
@@ -598,10 +694,11 @@ const chatHistoryManager = {
     };
   },
 
+    // Returns first message in the conversation
   getFirstMessage() {
     return this.metadata.firstInteraction || null;
   },
-
+    // Retreive conversation summary
   getConversationSummary() {
     return {
       firstMessage: this.getFirstMessage(),
@@ -613,6 +710,7 @@ const chatHistoryManager = {
     };
   },
 
+  // Loads chat history from local storage.
   load() {
     try {
       const savedHistory = localStorage.getItem('chatHistory');
@@ -643,6 +741,7 @@ const chatHistoryManager = {
     }
   },
 
+  // Saves chat history to local storage.
   save() {
     try {
       localStorage.setItem('chatHistory', JSON.stringify(this.history));
@@ -657,6 +756,7 @@ const chatHistoryManager = {
     }
   },
 
+    // Clears all chat history from local storage.
   clear() {
     this.history = [];
     this.metadata = {
@@ -670,26 +770,26 @@ const chatHistoryManager = {
   },
 
   // Add new methods for context management
-  getRecentContext() {
-    const recentMessages = this.history.slice(-CONTEXT_WINDOW_SIZE);
-    return {
-      messages: recentMessages,
-      summary: this.summarizeContext(recentMessages),
-      totalMessages: this.history.length
-    };
-  },
+    getRecentContext() {
+        const recentMessages = this.history.slice(-CONTEXT_WINDOW_SIZE);
+        return {
+        messages: recentMessages,
+        summary: this.summarizeContext(recentMessages),
+        totalMessages: this.history.length
+        };
+    },
 
   summarizeContext(messages) {
     if (!messages.length) return null;
     
-    const lastUserMessage = messages
+      const lastUserMessage = messages
       .filter(msg => msg.role === 'user')
       .pop();
       
     const lastAssistantMessage = messages
       .filter(msg => msg.role === 'assistant')
       .pop();
-
+    
     return {
       lastUserQuery: lastUserMessage?.content || null,
       lastResponse: lastAssistantMessage?.content || null,
@@ -698,13 +798,14 @@ const chatHistoryManager = {
     };
   },
 
+  // Get previous exchange between user and assistant
   getPreviousExchange() {
     const history = this.history;
-    if (history.length < 2) return null;
+      if (history.length < 2) return null;
 
     // Get the last user-assistant exchange
     const lastMessages = history.slice(-2);
-    if (lastMessages[0].role === 'user' && lastMessages[1].role === 'assistant') {
+      if (lastMessages[0].role === 'user' && lastMessages[1].role === 'assistant') {
       return {
         userMessage: lastMessages[0].content,
         assistantResponse: lastMessages[1].content
@@ -712,30 +813,33 @@ const chatHistoryManager = {
     }
     return null;
   },
-
+  
+  // Detect whether a message is asking for improvement
   checkForImprovement(message) {
     const isImproveRequest = IMPROVEMENT_TRIGGERS.some(trigger => 
-      message.toLowerCase().includes(trigger)
-    );
+        message.toLowerCase().includes(trigger)
+        );
     
-    if (isImproveRequest && message.split(' ').length > 3) {
-      this.lastImprovedText = message;
-      this.improvementCount++;
-      return true;
+        if (isImproveRequest && message.split(' ').length > 3) {
+        this.lastImprovedText = message;
+        this.improvementCount++;
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
 };
 
 /*******************************************************
  * chatHistory Access Helpers
  *******************************************************/
+// Helper function to update chat history
 function updateChatHistory(role, content) {
   return chatHistoryManager.addMessage(role, content);
 }
 
+// Helper function to load the chat history
 function loadChatHistory() {
-  chatHistoryManager.load();
+    chatHistoryManager.load();
   if (chatHistoryManager.history.length > 0) {
     chatHistoryManager.history.forEach(msg => appendMessage(msg.role, msg.content));
   } else {
@@ -743,6 +847,7 @@ function loadChatHistory() {
   }
 }
 
+// Helper function to clear the chat history
 function clearChat() {
   chatHistoryManager.clear();
   const chat = document.getElementById('chat');
@@ -755,6 +860,7 @@ function clearChat() {
 /*******************************************************
  * Dark Mode Toggling
  *******************************************************/
+// Toggles dark mode
 function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
   const darkBtn = document.querySelector('.dark-mode-toggle');
@@ -768,6 +874,7 @@ function toggleDarkMode() {
   localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
 }
 
+// Load Darkmode preference
 function loadDarkMode() {
   // Check localStorage first
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -787,26 +894,36 @@ function loadDarkMode() {
 /*******************************************************
  * Button Click Handlers
  *******************************************************/
+// Function to handle send message button click
 function handleSendMessageClick() {
   sendMessage();
 }
 
+// Function to handle open code modal button click
 function handleOpenCodeModalClick() {
   const codeSample = "console.log('Hello, World!');";
   openCodeModal(codeSample, "javascript");
 }
 
+// Function to handle close code modal button click
 function handleCloseCodeModalClick() {
   closeCodeModal();
 }
 
+// Function to handle all button clicks
 function handleButtonClick(event) {
+    // Find the closest button
   const button = event.target.closest('button');
+  // If not button, return
   if (!button) return;
+  // Get the onclick action
   const action = button.getAttribute('onclick');
   if (action) {
+      // Prevent default action
     event.preventDefault();
+      // Clean up function name
     const functionName = action.replace('()', '');
+      // Call the function if it is a valid function
     if (typeof window[functionName] === 'function') {
       window[functionName]();
     }
@@ -816,26 +933,31 @@ function handleButtonClick(event) {
 /*******************************************************
  * chatApp - Main controller
  *******************************************************/
+// This object controls the state of the chat application
 const chatApp = {
+    // Tracks the state of the chat app.
   state: { thinking: false, lastMessageId: null },
+    // Initialize all chat functionality
   init() {
-    // Initialize AI Memory Manager first
+        // Initialize AI Memory Manager first
     window.aiMemoryManager = new AIMemoryManager();
-    
-    // Load dark mode before other components
+        
+        // Load dark mode before other components
     loadDarkMode();
-    
-    // Add dark mode toggle listener
+        
+        // Add dark mode toggle listener
     const darkModeBtn = document.querySelector('.dark-mode-toggle');
     if (darkModeBtn) {
       darkModeBtn.addEventListener('click', toggleDarkMode);
     }
-    
-    // Then load other components
+        
+        // Then load other components
     loadChatHistory();
-
+        
+        // add listener for click
     document.addEventListener('click', handleButtonClick);
-
+        
+        // Get the input and send buttons
     const chatInput = document.getElementById('chatInput');
     const sendButton = document.getElementById('sendMessageBtn');
     if (chatInput) {
@@ -849,13 +971,13 @@ const chatApp = {
     if (sendButton) {
       sendButton.addEventListener('click', sendMessage);
     }
-
+        // Add listener for clearing history
     const clearButton = document.getElementById('clearChat');
     if (clearButton) {
       clearButton.addEventListener('click', clearChat);
     }
 
-    // If you have a code modal
+    // If you have a code modal, ensure it closes correctly
     window.onclick = function(event) {
       const modal = document.getElementById('codeModal');
       if (event.target === modal) {
@@ -869,16 +991,15 @@ const chatApp = {
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.3/purify.min.js';
       document.head.appendChild(script);
     }
-
-    // Load saved context
+        // Load saved context
     const savedContext = localStorage.getItem(MESSAGE_HISTORY_KEY);
     if (savedContext) {
       try {
-        const context = JSON.parse(savedContext);
+          const context = JSON.parse(savedContext);
         if (context.messages) {
           context.messages.forEach(msg => {
-            appendMessage(msg.role, msg.content);
-            chatHistoryManager.addMessage(msg.role, msg.content);
+              appendMessage(msg.role, msg.content);
+              chatHistoryManager.addMessage(msg.role, msg.content);
           });
         }
       } catch (error) {
@@ -891,6 +1012,7 @@ const chatApp = {
 /*******************************************************
  * On DOMContentLoaded
  *******************************************************/
+// Run chat app initialization when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   chatApp.init();
 });
@@ -898,13 +1020,17 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ...existing code... */
 
 // Add these constants near the top of the file
-const CONTEXT_WINDOW_SIZE = 10; // Number of previous messages to keep for context
+// Number of messages to keep for context
+const CONTEXT_WINDOW_SIZE = 10;
+// Key for chat history storage in localStorage
 const MESSAGE_HISTORY_KEY = 'chatMessageHistory';
+// Array of words used to trigger an improvement to the previous AI message
 const IMPROVEMENT_TRIGGERS = ['improve', 'enhance', 'better', 'fix', 'correct', 'grammar'];
 
 /* ...rest of existing code... */
 
 // Add new constants for reasoning
+// Different steps for AI response logic
 const REASONING_STEPS = {
   ANALYZE: 'analyzing',
   CONTEXT: 'context',
@@ -913,6 +1039,7 @@ const REASONING_STEPS = {
   RESPOND: 'respond'
 };
 
+// Contextual messages while thinking
 const THINKING_MESSAGES = {
   [REASONING_STEPS.ANALYZE]: 'Analyzing your message...',
   [REASONING_STEPS.CONTEXT]: 'Understanding context...',
@@ -922,37 +1049,47 @@ const THINKING_MESSAGES = {
 };
 
 // Enhanced message analysis
+// This functions analyzes the user message
 function analyzeMessage(message) {
+  // Set default message state
   const analysis = {
     isImprovement: message.toLowerCase().includes('improve') || message.toLowerCase().includes('better'),
     isGrammarCheck: message.toLowerCase().includes('grammar') || message.toLowerCase().includes('correct'),
     hasQuestion: message.includes('?'),
     wordCount: message.split(' ').length,
     complexity: message.length > 100 ? 'complex' : 'simple',
-    context: null
+      context: null
   };
-
-  // Check if it's an improvement request for previous message
-  if (analysis.isImprovement && message.split(' ').length <= 3) {
-    analysis.context = 'improve_previous';
-  }
-
-  return analysis;
+    
+    // Check if it's an improvement request for previous message
+    if (analysis.isImprovement && message.split(' ').length <= 3) {
+        analysis.context = 'improve_previous';
+    }
+  
+    return analysis;
 }
 
 /* ...existing code... */
 
 // Add these constants at the top with other constants
+// Key for storing the main memory of the ai
 const MEMORY_STORAGE_KEY = 'hexacola_memory';
+// Maximum number of memories to store
 const MAX_MEMORIES = 50;
+// Particle count for animations
 const PARTICLE_COUNT = 30;
 
 // Add these constants at the top
+// Key for storing personal information
 const PERSONAL_INFO_KEY = 'hexacola_personal_info';
+// Key for storing personality traits
 const PERSONALITY_TRAITS_KEY = 'hexacola_personality';
+// Key for storing interests
 const INTERESTS_KEY = 'hexacola_interests';
+// Key for storing conversation patterns
 const CONVERSATION_PATTERNS_KEY = 'hexacola_patterns';
 
+// This class manages the AI memory, personal information, conversation analysis, and all modal and particle animations.
 class AIMemoryManager {
     constructor() {
         // Initialize basic properties
@@ -981,6 +1118,7 @@ class AIMemoryManager {
         this.setupClearMemoriesButton();
     }
 
+    // Adds all needed event listeners for the AI memory system
     setupEventListeners() {
         // Setup brain button click handler
         const brainBtn = document.getElementById('brainMemoryBtn');
@@ -1006,7 +1144,7 @@ class AIMemoryManager {
             });
         }
     }
-
+    // Loads memories from local storage
     loadMemories() {
         try {
             const savedMemories = localStorage.getItem(MEMORY_STORAGE_KEY);
@@ -1019,7 +1157,7 @@ class AIMemoryManager {
         }
         return this.memories;
     }
-
+    // Loads personal information from local storage
     loadPersonalInfo() {
         return JSON.parse(localStorage.getItem(PERSONAL_INFO_KEY)) || {
             name: null,
@@ -1027,7 +1165,7 @@ class AIMemoryManager {
             location: null
         };
     }
-
+    // Loads the personality traits from local storage
     loadPersonalityTraits() {
         return JSON.parse(localStorage.getItem(PERSONALITY_TRAITS_KEY)) || {
             traits: [],
@@ -1036,7 +1174,7 @@ class AIMemoryManager {
             preferences: {}
         };
     }
-
+    // Loads interests from local storage
     loadInterests() {
         return JSON.parse(localStorage.getItem(INTERESTS_KEY)) || {
             hobbies: [],
@@ -1045,7 +1183,7 @@ class AIMemoryManager {
             favorites: {}
         };
     }
-
+    // Loads conversation patterns from local storage
     loadConversationPatterns() {
         return JSON.parse(localStorage.getItem(CONVERSATION_PATTERNS_KEY)) || {
             frequentTopics: {},
@@ -1053,27 +1191,27 @@ class AIMemoryManager {
             timePatterns: {}
         };
     }
-
+    // Saves personal information to local storage
     savePersonalInfo(key, value) {
         this.personalInfo[key] = value;
         this.personalInfo.lastInteraction = Date.now();
         localStorage.setItem(PERSONAL_INFO_KEY, JSON.stringify(this.personalInfo));
     }
-
+    // Updates the personality traits in local storage
     updatePersonality(trait) {
         if (!this.personality.traits.includes(trait)) {
             this.personality.traits.push(trait);
             localStorage.setItem(PERSONALITY_TRAITS_KEY, JSON.stringify(this.personality));
         }
     }
-
+    // Adds a new interest category and item to the local storage
     addInterest(category, item) {
         if (!this.interests[category].includes(item)) {
             this.interests[category].push(item);
             localStorage.setItem(INTERESTS_KEY, JSON.stringify(this.interests));
         }
     }
-
+    // Analyses the user's messages and extracts important information
     analyzeMessage(message) {
         // Name detection
         const nameMatch = message.match(/(?:my name is|I am|I'm) ([A-Z][a-z]+)/i);
@@ -1108,7 +1246,7 @@ class AIMemoryManager {
             }
         });
     }
-
+    // Enhances the AI response with personalized context
     enhanceResponse(response) {
         let enhanced = response;
         
@@ -1140,7 +1278,7 @@ class AIMemoryManager {
 
         return enhanced;
     }
-
+    // Saves messages to the memory log
     saveMemory(message, response) {
         // Analyze the message for personal information
         this.analyzeMessage(message);
@@ -1171,7 +1309,7 @@ class AIMemoryManager {
         // After saving the memory, update storage
         this.saveMemoryState();
     }
-
+    // Updates the conversation patterns in the localStorage
     updateConversationPatterns(message) {
         const topics = this.extractTopics(message);
         topics.forEach(topic => {
@@ -1183,9 +1321,7 @@ class AIMemoryManager {
         
         localStorage.setItem(CONVERSATION_PATTERNS_KEY, JSON.stringify(this.patterns));
     }
-
-    /* ...existing AIMemoryManager methods... */
-
+    // updates the memory display to show all stored content
     updateMemoryDisplay() {
         const memoryList = document.querySelector('.memory-list');
         if (!memoryList) return;
@@ -1227,7 +1363,7 @@ class AIMemoryManager {
 
         /* ...rest of existing updateMemoryDisplay code... */
     }
-
+    // creates the particle animations in the background of the brain visualization
     initializeParticles() {
         const container = document.querySelector('.particles-container');
         if (!container) return;
@@ -1258,6 +1394,7 @@ class AIMemoryManager {
         }
     }
 
+    // Animates the particles in the brain visualization
     animateParticles() {
         const container = document.querySelector('.particles-container');
         if (!container || !this.isModalOpen) return;
@@ -1300,7 +1437,7 @@ class AIMemoryManager {
 
         this.animationFrameId = requestAnimationFrame(() => this.animateParticles());
     }
-
+    // Sets up the event listener for esc key
     setupKeyboardListener() {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isModalOpen) {
@@ -1308,7 +1445,7 @@ class AIMemoryManager {
             }
         });
     }
-
+    // Opens the brain memory modal
     openModal() {
         if (!this.modal) return;
         
@@ -1325,7 +1462,7 @@ class AIMemoryManager {
             brainBtn.classList.add('pulse');
         }
     }
-
+    // Closes the brain memory modal
     closeModal() {
         if (!this.modal) return;
         
@@ -1343,7 +1480,7 @@ class AIMemoryManager {
             brainBtn.classList.remove('pulse');
         }
     }
-
+    // Updates the memory display
     updateMemoryDisplay() {
         const memoryList = document.querySelector('.memory-list');
         if (!memoryList) return;
@@ -1354,15 +1491,15 @@ class AIMemoryManager {
         const html = Object.entries(groupedMemories).map(([date, memories]) => `
             <div class="memory-group">
                 <h4 class="memory-date">${date}</h4>
-                ${memories.map(memory => `
-                    <div class="memory-item" data-timestamp="${memory.timestamp}">
+                ${memories.map(memory => {
+                    return `<div class="memory-item" data-timestamp="${memory.timestamp}">
                         <div class="memory-time">${new Date(memory.timestamp).toLocaleTimeString()}</div>
                         <div class="memory-content">
                             <p class="memory-message">${this.escapeHtml(memory.message)}</p>
                             <div class="memory-context">${this.formatContext(memory.context)}</div>
                         </div>
-                    </div>
-                `).join('')}
+                    </div>`;
+                }).join('')}
             </div>
         `).join('');
 
@@ -1379,7 +1516,7 @@ class AIMemoryManager {
             });
         });
     }
-
+    // Groups all stored memories by date
     groupMemoriesByDate() {
         const groups = {};
         this.memories.forEach(memory => {
@@ -1389,14 +1526,14 @@ class AIMemoryManager {
         });
         return groups;
     }
-
+    // Formats context as HTML
     formatContext(context) {
         if (!context) return '';
         return `<div class="context-tags">
             ${context.topics?.map(topic => `<span class="context-tag">${topic}</span>`).join('') || ''}
         </div>`;
     }
-
+    // Highlights memories that are connected
     highlightConnectedMemories(timestamp) {
         const items = document.querySelectorAll('.memory-item');
         items.forEach(item => {
@@ -1405,28 +1542,29 @@ class AIMemoryManager {
             }
         });
     }
-
+    // Clears all highlighted memories
     clearHighlights() {
         document.querySelectorAll('.memory-item').forEach(item => {
             item.classList.remove('connected');
         });
     }
-
+    // Checks if two memories are connected
     areMemoriesConnected(timestamp1, timestamp2) {
         // Implement your connection logic here
         // For example, memories within 5 minutes might be connected
         return Math.abs(timestamp1 - timestamp2) < 300000;
     }
 
+    // Escape html tags in text
     escapeHtml(unsafe) {
         return unsafe
-            .replace(/&/g, "&amp;")     // Remove extra space between /< and /g
-            .replace(/</g, "&lt;")      // Fix: was /</  /g with extra spaces
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
-
+    // extracts the context from a message
     extractContext(message) {
         // Extract context from the message
         return {
@@ -1436,7 +1574,7 @@ class AIMemoryManager {
             keywords: this.extractKeywords(message)
         };
     }
-
+    // Extracts topics from the text
     extractTopics(message) {
         if (!message || typeof message !== 'string') return [];
         
@@ -1449,7 +1587,7 @@ class AIMemoryManager {
         // Remove duplicates
         return [...new Set(words)];
     }
-
+    // Analyzes sentiment of a message
     analyzeSentiment(message) {
         // Basic sentiment analysis (can be expanded)
         const positiveWords = ['good', 'great', 'awesome', 'excellent', 'happy', 'love', 'enjoy'];
@@ -1465,15 +1603,15 @@ class AIMemoryManager {
         
         return sentiment > 0 ? 'positive' : sentiment < 0 ? 'negative' : 'neutral';
     }
-
+    // Extracts keywords from message
     extractKeywords(message) {
         // Extract potential keywords (capitalized words, technical terms, etc.)
         const keywords = message.match(/\b[A-Z][a-z]+\b|\b[A-Z]+\b/g) || [];
         return [...new Set(keywords)];
     }
 
-    // ...rest of existing AIMemoryManager code...
-
+    /* ...rest of existing AIMemoryManager code... */
+    // Initializes memory storage if it doesn't exist
     initializeMemoryStorage() {
         // Initialize memory storage if it doesn't exist
         if (!localStorage.getItem(MEMORY_STORAGE_KEY)) {
@@ -1488,7 +1626,7 @@ class AIMemoryManager {
         }
         this.loadMemoryState();
     }
-
+    // Loads memory state
     loadMemoryState() {
         try {
             const state = JSON.parse(localStorage.getItem(MEMORY_STORAGE_KEY));
@@ -1501,7 +1639,7 @@ class AIMemoryManager {
             console.error('Error loading memory state:', error);
         }
     }
-
+    // Saves memory state
     saveMemoryState() {
         try {
             localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify({
@@ -1516,7 +1654,7 @@ class AIMemoryManager {
             console.error('Error saving memory state:', error);
         }
     }
-
+    // Clears all stored memories
     clearMemories() {
         this.memories = [];
         this.personalInfo = {
@@ -1533,6 +1671,7 @@ class AIMemoryManager {
         this.updateMemoryDisplay();
     }
 
+    // sets up the button for clearing all memories
     setupClearMemoriesButton() {
         const clearBtn = document.createElement('button');
         clearBtn.className = 'clear-memories-btn';
@@ -1550,4 +1689,3 @@ class AIMemoryManager {
         }
     }
 }
-
