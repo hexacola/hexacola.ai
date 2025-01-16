@@ -472,6 +472,7 @@ html, body {
         rgba(255, 255, 255, 0.5),
         rgba(255, 255, 255, 0.8)
     );
+    color: black; /* Always black for printing */
 }
 
 /* Scene Headings */
@@ -480,45 +481,44 @@ html, body {
     margin-bottom: 1em;
     text-transform: uppercase;
     font-weight: bold;
+    page-break-after: avoid;
 }
 
 /* Character Names */
 .ql-editor p[data-format="character"] {
     margin-top: 1em;
     margin-bottom: 0;
-    text-align: center;
+    text-align: left;
     text-transform: uppercase;
     margin-left: 2.5in;
+    page-break-after: avoid;
+    width: 4in;
 }
 
 /* Dialogue */
 .ql-editor p[data-format="dialogue"] {
     margin-top: 0;
     margin-bottom: 1em;
-    margin-left: 1.5in;
+    margin-left: 1in;
     margin-right: 1.5in;
-    text-align: center;
+    text-align: left;
+    width: 3.5in;
 }
 
 /* Parentheticals */
 .ql-editor p[data-format="parenthetical"] {
-    margin-top: 0;
-    margin-bottom: 0;
-    text-align: center;
-    margin-left: 2in;
-    margin-right: 2in;
-    font-style: italic;
     margin: 0 2in;
-    text-align: center;
+    text-align: left;
+    margin-left: 1.5in;
     font-style: italic;
+    width: 2.5in;
 }
 
 /* Action */
 .ql-editor p[data-format="action"] {
-    margin-top: 1em;
-    margin-bottom: 1em;
-    text-align: left;
     margin: 1em 0;
+    text-align: left;
+    width: 6in;
 }
 
 /* Transitions */
@@ -557,6 +557,20 @@ html, body {
     .formatting-toolbar,
     .ql-toolbar {
         display: none;
+    }
+
+    /* Ensure proper page breaks */
+    .ql-editor p[data-format="scene-heading"] {
+        page-break-after: avoid;
+    }
+
+    .ql-editor p[data-format="character"] {
+        page-break-after: avoid;
+    }
+
+    /* Avoid breaking up dialogue */
+    .ql-editor p[data-format="dialogue"] {
+        page-break-before: avoid;
     }
 }
 
