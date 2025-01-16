@@ -155,6 +155,7 @@
             <!-- Editor Header with Formatting Options -->
             <div class="editor-header">
                 <div class="editor-title">
+                    <label for="scriptTitle">Script Title</label>
                     <input type="text" id="scriptTitle" placeholder="Script Title">
                     <span class="wip-indicator">Work in Progress...</span>
                 </div>
@@ -210,6 +211,46 @@
                 </select>
             </div>
 
+            <!-- AI Suggestion Settings Panel -->
+            <div class="suggestion-settings">
+                <button id="toggleSuggestions" class="action-btn">
+                    <i class="fas fa-lightbulb"></i> AI Suggestions
+                </button>
+                <div class="settings-panel hidden">
+                    <h4>AI Suggestion Settings</h4>
+                    <div class="setting-group">
+                        <label for="suggestionFrequency">Suggestion Frequency</label>
+                        <select id="suggestionFrequency">
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="suggestionDetail">Detail Level</label>
+                        <select id="suggestionDetail">
+                            <option value="phrase">Short Phrases</option>
+                            <option value="sentence" selected>Full Sentences</option>
+                            <option value="paragraph">Full Paragraphs</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Enable Suggestions For:</label>
+                        <div class="checkbox-group">
+                            <label for="suggestScene">
+                                <input type="checkbox" id="suggestScene" name="suggestFor" value="scene-heading" checked> Scene Descriptions
+                            </label>
+                            <label for="suggestAction">
+                                <input type="checkbox" id="suggestAction" name="suggestFor" value="action" checked> Actions
+                            </label>
+                            <label for="suggestDialogue">
+                                <input type="checkbox" id="suggestDialog" name="suggestFor" value="dialogue" checked> Dialogue
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Editor Container -->
             <div class="editor-container">
                 <div id="toolbar">
@@ -256,11 +297,12 @@
         </p>
     </footer>
 
-    <!-- Update script paths and add error handling -->
-    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"
-            onerror="handleResourceError(this.src)"
-            onload="window.resourcesLoaded.js = true; checkResourcesLoaded()"></script>
-    
+    <!-- Load Quill first -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+    <!-- Then load your script -->
+    <script src="../js/scriptwriter.js"></script>
+
     <!-- Add PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
@@ -284,9 +326,6 @@
         });
     </script>
 
-    <script src="../js/scriptwriter.js"
-            onerror="handleResourceError(this.src)"
-            onload="window.resourcesLoaded.js = true; checkResourcesLoaded()"></script>
     <script src="../js/navigation.js"
             onerror="handleResourceError(this.src)"
             onload="window.resourcesLoaded.js = true; checkResourcesLoaded()"></script>
