@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 align: 'left',
                 indent: 0 
             },
-            prefix: '',
             format: (text) => {
                 text = text.toUpperCase();
-                if (!text.match(/^(INT\.|EXT\.|INT\/EXT\.)/)) {
+                // Ensure proper scene heading format
+                if (!text.match(/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.)/)) {
                     text = 'INT. ' + text;
                 }
                 if (!text.includes(' - ')) {
@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return text;
             },
             nextElement: 'action',
-            shortcut: '1'
+            shortcut: '1',
+            margin: { top: 24, bottom: 12 }
         },
         'action': {
             style: { 
@@ -64,32 +65,37 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             format: (text) => text,
             nextElement: 'character',
-            shortcut: '2'
+            shortcut: '2',
+            margin: { top: 12, bottom: 12 }
         },
         'character': {
             style: { 
                 bold: true,
                 align: 'center',
-                indent: 4 
+                indent: 192 // 2 inches from left 
             },
             format: (text) => text.toUpperCase(),
             nextElement: 'dialogue',
-            shortcut: '3'
+            shortcut: '3',
+            margin: { top: 24, bottom: 0 }
         },
         'dialogue': {
             style: { 
-                align: 'center',
-                indent: 2 
+                align: 'left',
+                indent: 96, // 1 inch from left
+                width: 216 // 3.5 inches wide
             },
             format: (text) => text,
             nextElement: 'character',
-            shortcut: '4'
+            shortcut: '4',
+            margin: { top: 0, bottom: 12 }
         },
         'parenthetical': {
             style: { 
-                align: 'center',
-                indent: 3,
-                italic: true 
+                align: 'left',
+                indent: 144, // 1.5 inches from left
+                italic: true,
+                width: 168 // 2.5 inches wide
             },
             format: (text) => {
                 text = text.trim();
@@ -98,21 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return text;
             },
             nextElement: 'dialogue',
-            shortcut: '5'
-        },
-        'transition': {
-            style: { 
-                bold: true,
-                align: 'right',
-                indent: 0 
-            },
-            format: (text) => {
-                text = text.toUpperCase();
-                if (!text.endsWith('TO:')) text += ' TO:';
-                return text;
-            },
-            nextElement: 'scene-heading',
-            shortcut: '6'
+            shortcut: '5',
+            margin: { top: 0, bottom: 0 }
         }
     };
 
@@ -151,33 +144,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Core formatting function
     function applyFormat(formatType) {
-        const format = FORMATS[formatType];
-        if (!format) return;
+        const element = SCRIPT_ELEMENTS[formatType];
+        if (!element) return;
 
         const range = quill.getSelection(true);
         const currentPosition = range ? range.index : quill.getLength();
 
-        // Add newline if not at start
+        // Add proper spacing before element
         if (currentPosition > 0) {
-            quill.insertText(currentPosition, '\n');
-            quill.setSelection(currentPosition + 1, 0);
+            const [previousLine] = quill.getLine(currentPosition - 1);
+            const prevFormat = previousLine.domNode.dataset.format;
+            const prevElement = SCRIPT_ELEMENTS[prevFormat];
+            
+            // Add appropriate spacing based on previous element
+            if (prevElement && prevElement.margin && prevElement.margin.bottom > 0) {
+                quill.insertText(currentPosition, '\n'.repeat(Math.ceil(prevElement.margin.bottom / 12)));
+            }
         }
 
-        let text = range ? quill.getText(range.index, range.length) : format.prefix || '';
+        // Get and format text
+        let text = range ? quill.getText(range.index, range.length) : element.prefix || '';
+        text = element.format(text);
+
+        // Apply formatting with proper industry-standard margins
+        const format = {
+            ...element.style,
+            indent: element.style.indent || 0,
+            margin: element.margin || { top: 0, bottom: 0 }
+        };
+
+        // Insert formatted text
+        const insertPosition = quill.getSelection()?.index || quill.getLength();
+        quill.insertText(insertPosition, text, format);
         
-        if (format.uppercase) {
-            text = text.toUpperCase();
-        }
-        if (format.brackets && !text.startsWith('(')) {
-            text = `(${text})`;
+        // Add proper spacing after element
+        if (element.margin && element.margin.bottom > 0) {
+            quill.insertText(quill.getSelection()?.index || quill.getLength(), '\n');
         }
 
-        // Apply format
-        quill.insertText(quill.getSelection()?.index || 0, text, format.style);
-        quill.insertText(quill.getSelection()?.index || 0, '\n');
-        
-        // Auto-focus back to editor
-        quill.focus();
+        // Move cursor to next line
+        quill.setSelection((quill.getSelection()?.index || 0) + text.length + 1);
     }
 
     // Save functionality
@@ -316,11 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Keyboard shortcuts handler
+    // Enhanced keyboard shortcut handler
     function handleKeyboardShortcuts(e) {
+        // Prevent default browser shortcuts when using our format shortcuts
         if (e.ctrlKey && SHORTCUTS[e.key]) {
             e.preventDefault();
+            e.stopPropagation();
             applyFormat(SHORTCUTS[e.key]);
+            return false;
         }
     }
 
@@ -510,4 +519,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize
     setupEventListeners();
     initializeScriptwriter(quill);
+
+    // Prevent browser shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && ['1', '2', '3', '4', '5'].includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
 });
