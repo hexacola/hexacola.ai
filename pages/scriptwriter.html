@@ -4,12 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scriptwriter - HexaCola AI</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="css/scriptwriter.css">
-    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+
+    <!-- Fix stylesheet paths and add error handling -->
+    <script>
+        function handleResourceError(resource) {
+            console.error(`Failed to load resource: ${resource}`);
+            
+            // Add fallback styles for critical CSS
+            if (resource.endsWith('.css')) {
+                const fallbackStyles = document.createElement('style');
+                fallbackStyles.textContent = `
+                    body { font-family: Arial, sans-serif; }
+                    .editor-container { margin: 20px; padding: 20px; }
+                    /* Add other critical styles here */
+                `;
+                document.head.appendChild(fallbackStyles);
+            }
+            
+            // Show user-friendly error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'resource-error';
+            errorDiv.innerHTML = `
+                <div class="error-content">
+                    <p>Failed to load some resources. Please check your connection and refresh.</p>
+                </div>
+            `;
+            document.body.insertBefore(errorDiv, document.body.firstChild);
+        }
+
+        // Add resource loading status tracking
+        window.resourcesLoaded = {
+            css: false,
+            js: false
+        };
+
+        function checkResourcesLoaded() {
+            if (window.resourcesLoaded.css && window.resourcesLoaded.js) {
+                console.log('All resources loaded successfully');
+            }
+        }
+    </script>
+
+    <!-- Update CSS paths and add error handling -->
+    <link rel="stylesheet" href="../css/style.css" 
+          onerror="handleResourceError(this.href)"
+          onload="window.resourcesLoaded.css = true; checkResourcesLoaded()">
+    <link rel="stylesheet" href="../css/scriptwriter.css"
+          onerror="handleResourceError(this.href)"
+          onload="window.resourcesLoaded.css = true; checkResourcesLoaded()">
+    
+    <!-- External resources with error handling -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet"
+          onerror="handleResourceError(this.href)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          onerror="handleResourceError(this.href)">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"
+          onerror="handleResourceError(this.href)">
+
+    <!-- Add better font for screenplay -->
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Critical styles that should always be available */
+        .resource-error {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 9999;
+        }
+    </style>
 </head>
 <body>
     <!-- Header with Navigation -->
@@ -165,6 +233,19 @@
         </div>
     </div>
 
+    <!-- Add export format options -->
+    <div id="exportOptions" class="modal">
+        <div class="modal-content">
+            <h3>Export Options</h3>
+            <select id="exportFormat">
+                <option value="pdf">PDF</option>
+                <option value="fdx">Final Draft (FDX)</option>
+                <option value="fountain">Fountain</option>
+            </select>
+            <button onclick="exportScript()" class="action-btn">Export</button>
+        </div>
+    </div>
+
     <footer>
         <p>
             API Documentation:
@@ -174,9 +255,40 @@
             © 2024 Tauris – hexacola.ai scriptwriter
         </p>
     </footer>
-    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-    <script src="../js/scriptwriter.js"></script>
-    <script src="../js/navigation.js"></script>
+
+    <!-- Update script paths and add error handling -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"
+            onerror="handleResourceError(this.src)"
+            onload="window.resourcesLoaded.js = true; checkResourcesLoaded()"></script>
+    
+    <!-- Add PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    
+    <!-- Add proper script formatting library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <script>
+        // Error handling for script loading
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT') {
+                handleResourceError(e.target.src);
+            }
+        }, true);
+
+        // Add initialization check
+        window.addEventListener('load', function() {
+            if (!window.Quill) {
+                handleResourceError('Quill library not loaded');
+            }
+        });
+    </script>
+
+    <script src="../js/scriptwriter.js"
+            onerror="handleResourceError(this.src)"
+            onload="window.resourcesLoaded.js = true; checkResourcesLoaded()"></script>
+    <script src="../js/navigation.js"
+            onerror="handleResourceError(this.src)"
+            onload="window.resourcesLoaded.js = true; checkResourcesLoaded()"></script>
 </body>
 </html>
