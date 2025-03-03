@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HEXACOLA.AI - AI Creative Suite v1.0.1</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Create stunning AI-generated images, storyboards, and scripts with HEXACOLA.AI. Features advanced image generation models, smart chat assistance with memory, and real-time creative AI news.">
+    <meta name="keywords" content="AI image generator, storyboard creator, script writing, AI chat assistant, creative suite, pollinations AI, flux AI, art generation, AI tools, creative AI">
+    <meta name="author" content="Tauris">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="HEXACOLA.AI - AI Creative Suite">
+    <meta property="og:description" content="Transform your creative vision with AI-powered tools for image generation, storyboarding, and scriptwriting.">
+    <meta property="og:image" content="https://hexacola.ai/images/preview.jpg">
+    <meta property="og:url" content="https://hexacola.ai">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="HEXACOLA.AI - AI Creative Suite">
+    <meta name="twitter:description" content="Transform your creative vision with AI-powered tools for image generation, storyboarding, and scriptwriting.">
+    <meta name="twitter:image" content="https://hexacola.ai/images/preview.jpg">
+    
+    <!-- Robots Meta -->
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://hexacola.ai">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <a href="index.html" class="logo">
+            <i class="fas fa-cube"></i> HEXACOLA.AI
+        </a>
+        <nav class="main-nav">
+            <button onclick="navigateToHome()" class="active" aria-label="Go to home">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button onclick="showGenerator()" aria-label="Go to generator view">
+                <i class="fas fa-magic"></i> Generator
+            </button>
+            <button onclick="navigateToStoryboard()" aria-label="Go to storyboard view">
+                <i class="fas fa-film"></i> Storyboard
+            </button>
+            <button onclick="navigateToScriptwriter()" aria-label="Go to scriptwriter">
+                <i class="fas fa-pen-fancy"></i> Scriptwriter
+            </button>
+            <button onclick="navigateToChat()" aria-label="Go to chat">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <!-- Add Login Button -->
+            <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+                <i class="fas fa-user"></i> Login
+            </button>
+            <button onclick="toggleDarkMode()" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i> 🌙
+            </button>
+        </nav>
+    </header>
+
+    <!-- Add Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-modal">
+            <span class="close" onclick="toggleLoginModal()">&times;</span>
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerName">Full Name:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Register</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add the news sidebar -->
+    <div class="news-sidebar" id="newsSidebar">
+        <div class="news-header">
+            <h3><i class="fas fa-newspaper"></i> Creative AI News</h3>
+            <button class="close-sidebar" id="closeSidebar" aria-label="Close news sidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="news-search">
+            <input type="text" id="newsSearchInput" placeholder="Search AI creative news...">
+            <button id="searchNewsBtn" aria-label="Search news">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        <div class="news-content" id="newsContent">
+            <!-- News items will be dynamically inserted here -->
+            <div class="news-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading news...</span>
+            </div>
+        </div>
+        <button class="load-more-news" id="loadMoreNews">
+            Load More News
+        </button>
+        <!-- Toggle button for news sidebar -->
+        <button class="toggle-news-sidebar" id="toggleNewsSidebar" aria-label="Toggle news sidebar">
+            <i class="fas fa-newspaper"></i>
+        </button>
+    </div>
+
+    <div class="main-wrapper">
+        <main class="container active" id="homeContainer">
+            <!-- Updated Hero Section -->
+            <section class="hero-section">
+                <div class="hero-content">
+                    <h1>Transform Your Creative Vision with AI</h1>
+                    <p class="hero-subtitle">Create stunning AI-generated images, design storyboards, write scripts, and chat with an AI that remembers - powered by Pollinations.AI with real-time creative news updates</p>
+                    <div class="hero-buttons">
+                        <button class="primary-btn" onclick="showGenerator()">
+                            <i class="fas fa-magic"></i> Start Creating
+                        </button>
+                        <button class="secondary-btn" onclick="navigateToChat()">
+                            <i class="fas fa-robot"></i> Chat with AI
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Updated Quick Tools Section -->
+            <section class="quick-tools">
+                <div class="section-header">
+                    <h2><i class="fas fa-tools"></i> Creative Tools</h2>
+                    <span class="version-badge">Version 1.0.1</span>
+                </div>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showGenerator()">
+                        <i class="fas fa-magic"></i>
+                        <h3>AI Image Generator <span class="status-badge stable">Stable</span></h3>
+                        <p>8 specialized models including Flux series, Dark mode, and Turbo - powered by Pollinations.AI</p>
+                    </div>
+                    <div class="tool-card" onclick="navigateToStoryboard()">
+                        <i class="fas fa-film"></i>
+                        <h3>Smart Storyboard <span class="status-badge stable">Stable</span></h3>
+                        <p>Generate complete visual narratives with scene management, frame exports, and auto-descriptions</p>
+                    </div>
+                    <div class="tool-card" onclick="navigateToScriptwriter()">
+                        <i class="fas fa-pen-fancy"></i>
+                        <h3>AI Scriptwriter <span class="status-badge beta">Beta</span></h3>
+                        <p>Professional script formatting with industry-standard layouts and AI assistance</p>
+                    </div>
+                    <div class="tool-card" onclick="navigateToChat()">
+                        <i class="fas fa-robot"></i>
+                        <h3>Creative AI Assistant <span class="status-badge beta">Beta</span></h3>
+                        <p>Multiple AI personalities with brain memory and context awareness</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Updated Latest Features Section -->
+            <section class="updates-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-star"></i> Latest Features</h2>
+                </div>
+                <div class="update-card">
+                    <h3>New in Version 1.0.1</h3>
+                    <ul>
+                        <li><strong>AI Brain Memory:</strong> Chat assistant now remembers conversations and learns from interactions</li>
+                        <li><strong>Creative AI News Feed:</strong> Real-time updates about AI art and technology</li>
+                        <li><strong>Enhanced Chat Experience:</strong> Multiple AI personalities with context awareness</li>
+                        <li><strong>Improved Image Generation:</strong> Better error handling and retry mechanisms</li>
+                        <li><strong>Parallel Processing:</strong> Generate multiple images simultaneously</li>
+                        <li><strong>Style Improvements:</strong> New interface design and dark mode enhancements</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Updated Future Updates Section -->
+            <section class="updates-section">
+                <h2><i class="fas fa-rocket"></i> Coming Soon</h2>
+                <div class="update-card">
+                    <h3>Planned Features</h3>
+                    <ul>
+                        <li><strong>Complete Scriptwriter Suite</strong>
+                            <ul>
+                                <li>Full screenplay formatting capabilities</li>
+                                <li>AI-powered story suggestions</li>
+                                <li>Character development tools</li>
+                                <li>Scene analysis features</li>
+                            </ul>
+                        </li>
+                        <li><strong>Video Generation in Storyboard</strong>
+                            <ul>
+                                <li>Animate between storyboard frames</li>
+                                <li>Multiple transition effects</li>
+                                <li>Sound integration options</li>
+                                <li>Video export capabilities</li>
+                            </ul>
+                        </li>
+                        <li><strong>Enhanced Image Generation</strong>
+                            <ul>
+                                <li>Additional AI model integrations</li>
+                                <li>Improved prompt optimization</li>
+                                <li>Advanced batch processing</li>
+                                <li>Better style mixing capabilities</li>
+                            </ul>
+                        </li>
+                        <li><strong>User Accounts & Cloud Storage</strong>
+                            <ul>
+                                <li>Secure authentication system</li>
+                                <li>Cloud-based project storage</li>
+                                <li>Project sharing capabilities</li>
+                                <li>Collaboration features</li>
+                            </ul>
+                        </li>
+                        <li><strong>Mobile Support</strong>
+                            <ul>
+                                <li>Responsive design for all devices</li>
+                                <li>Touch-friendly interface</li>
+                                <li>Progressive Web App functionality</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- How It Works Section -->
+            <section class="how-it-works">
+                <h2><i class="fas fa-question-circle"></i> How It Works</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-magic"></i>
+                        <h3>Image Generator</h3>
+                        <p>Create images using 8 specialized AI models with customizable styles, camera features, and color schemes.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-film"></i>
+                        <h3>Storyboard</h3>
+                        <p>Generate complete visual narratives with up to 10 frames, real-time preview, and easy reordering.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-pen-fancy"></i>
+                        <h3>Script Writer <span class="wip-badge" style="background: #ff6b6b; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">Work in Progress</span></h3>
+                        <p>Coming soon: AI-powered script writing assistant with intelligent story development, character arcs, and professional formatting. Currently in development.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-comments"></i>
+                        <h3>AI Chat</h3>
+                        <p>Context-aware assistance with multiple AI models including OpenAI, Mistral, and specialized variants.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Models Section - New -->
+            <section class="updates-section">
+                <h2><i class="fas fa-microchip"></i> Available AI Models</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3>Image Generation</h3>
+                        <ul>
+                            <li>Flux - Standard generation</li>
+                            <li>Flux Anime - Stylized art</li>
+                            <li>Flux 3D - Dimensional renders</li>
+                            <li>Flux Pro - Professional quality</li>
+                            <li>Flux Realism - Photorealistic</li>
+                            <li>Flux Cablyai - Detailed art</li>
+                            <li>Any Dark - Dark themes</li>
+                            <li>Turbo - Quick generation</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Chat Models</h3>
+                        <ul>
+                            <li>Hexacola - Standard assistant</li>
+                            <li>Hexacola Twin - Alternative personality</li>
+                            <li>Hexacola Evil - Uncensored responses</li>
+                            <li>Friend of Hexacola - Casual conversation</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Disclaimer Section -->
+            <section class="disclaimer-section">
+                <h2><i class="fas fa-exclamation-circle"></i> Important Note About AI</h2>
+                <div class="disclaimer-card">
+                    <h3>Understanding AI Limitations</h3>
+                    <p>While our AI tools are powerful, the quality of results heavily depends on your input:</p>
+                    <ul>
+                        <li>AI responds best to clear, detailed prompts</li>
+                        <li>Results may vary and might need multiple attempts</li>
+                        <li>Human creativity and guidance are essential for best results</li>
+                        <li>Always review and refine your prompts for better outcomes</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Creative Tips Section -->
+            <section class="creative-tips">
+                <h2><i class="fas fa-lightbulb"></i> Creative Tips</h2>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <h3>Writing Effective Prompts</h3>
+                        <ul>
+                            <li>Be specific about art style (e.g., "oil painting," "digital art")</li>
+                            <li>Include lighting and atmosphere details</li>
+                            <li>Specify perspective and composition</li>
+                            <li>Mention color schemes and moods</li>
+                        </ul>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Best Practices</h3>
+                        <ul>
+                            <li>Start with simple prompts and gradually add complexity</li>
+                            <li>Save successful prompts for future reference</li>
+                            <li>Experiment with different styles and settings</li>
+                            <li>Use reference images when available</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced Quick Start Guide -->
+            <section class="quick-start">
+                <h2><i class="fas fa-play-circle"></i> Quick Start Guide</h2>
+                <div class="guide-steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <p>Choose your tool: Generator for single images, Storyboard for sequences, or Chat for guidance</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <p>Craft your prompt using specific details about style, mood, and composition</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <p>Adjust advanced settings like image size, style strength, and generation parameters</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <p>Review, iterate, and refine your results until satisfied</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Bottom warning should come before legal sections -->
+            <section class="bottom-warning">
+                <div class="warning-container">
+                    <div class="warning-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <h2>Protect Yourself from Scams</h2>
+                    </div>
+                    <div class="warning-content">
+                        <p><strong>Remember:</strong> HEXACOLA.AI has:</p>
+                        <ul>
+                            <li>❌ NO social media accounts</li>
+                            <li>❌ NO cryptocurrency or tokens</li>
+                            <li>❌ NO third-party partnerships</li>
+                            <li>❌ NO official representatives</li>
+                        </ul>
+                        <div class="warning-contact">
+                            <p>✉️ Official Contact Only: <strong>taurisblog@gmail.com</strong></p>
+                        </div>
+                        <div class="warning-footer">
+                            <p>Report scams and impersonators to your local authorities</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Disclaimer moved near legal info -->
+            <section class="content-disclaimer">
+                <div class="disclaimer-box">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Content Disclaimer</h3>
+                    <p>HEXACOLA.AI utilizes the Pollinations.AI API. Please note:</p>
+                    <ul>
+                        <li>Generated content may be subject to API provider's terms</li>
+                        <li>Image quality depends on selected model and settings</li>
+                        <li>Local storage is used for saving generated images</li>
+                        <li>Multiple export options available (PNG/JPG/WEBP)</li>
+                        <li>Free for personal and commercial use</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Development Status moved near legal info -->
+            <section class="development-status">
+                <h2><i class="fas fa-code-branch"></i> Development Status</h2>
+                <p>HEXACOLA.AI is actively being developed with new features and improvements added regularly.</p>
+                <ul>
+                    <li><strong>Stable:</strong> Image Generator, Storyboard Creator</li>
+                    <li><strong>Beta:</strong> Chat Assistant (Brain Memory), News Feed</li>
+                    <li><strong>In Development:</strong>
+                        <ul>
+                            <li>Complete Scriptwriter Suite</li>
+                            <li>Video Generation Features</li>
+                            <li>Enhanced Image Generation</li>
+                            <li>Mobile Responsive Design</li>
+                            <li>User Authentication System</li>
+                        </ul>
+                    </li>
+                    <li><strong>Planned:</strong> Cloud Storage, Asset Library, Collaboration Tools</li>
+                </ul>
+            </section>
+
+            <!-- Add License Information Section -->
+            <section class="license-info">
+                <h2><i class="fas fa-certificate"></i> Licensing Information</h2>
+                <div class="license-grid">
+                    <div class="license-card personal">
+                        <h3><i class="fas fa-user"></i> Personal Use</h3>
+                        <div class="license-content">
+                            <p>Free for personal, non-commercial use:</p>
+                            <ul>
+                                <li>Personal projects</li>
+                                <li>Educational purposes</li>
+                                <li>Non-profit use</li>
+                                <li>Testing and learning</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="license-card commercial">
+                        <h3><i class="fas fa-briefcase"></i> Commercial Use</h3>
+                        <div class="license-content">
+                            <p>Requires paid license for:</p>
+                            <ul>
+                                <li>Revenue-generating projects</li>
+                                <li>Business applications</li>
+                                <li>Commercial derivatives</li>
+                                <li>Monetized content</li>
+                            </ul>
+                            <a href="mailto:taurisblog@gmail.com" class="license-link">Contact for Commercial License</a>
+                        </div>
+                    </div>
+                    <div class="license-card restrictions">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Restrictions</h3>
+                        <div class="license-content">
+                            <p>Not permitted:</p>
+                            <ul>
+                                <li>Creating competing services</li>
+                                <li>Removing copyright notices</li>
+                                <li>Unauthorized branding use</li>
+                                <li>Redistribution without permission</li>
+                            </ul>
+                            <a href="LICENSE" class="license-link">Read Full License</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Legal Information Section -->
+            <section class="legal-section">
+                <h2><i class="fas fa-gavel"></i> Legal Information</h2>
+                <div class="legal-grid">
+                    <div class="legal-card terms">
+                        <h3><i class="fas fa-file-contract"></i> Terms of Service</h3>
+                        <div class="legal-content">
+                            <p>By using HEXACOLA.AI, you agree to:</p>
+                            <ul>
+                                <li>Not generate harmful, explicit, or illegal content</li>
+                                <li>Respect intellectual property rights</li>
+                                <li>Use the service for lawful purposes only</li>
+                                <li>Accept that generated content may be monitored</li>
+                            </ul>
+                            <a href="#" class="legal-link">Read Full Terms</a>
+                        </div>
+                    </div>
+
+                    <div class="legal-card privacy">
+                        <h3><i class="fas fa-shield-alt"></i> Privacy Policy</h3>
+                        <div class="legal-content">
+                            <p>We are committed to protecting your privacy:</p>
+                            <ul>
+                                <li>Your prompts and generations are private</li>
+                                <li>We don't sell personal data</li>
+                                <li>Data is stored securely</li>
+                                <li>You can request data deletion</li>
+                            </ul>
+                            <a href="#" class="legal-link">Read Privacy Policy</a>
+                        </div>
+                    </div>
+
+                    <div class="legal-card guidelines">
+                        <h3><i class="fas fa-clipboard-check"></i> Usage Guidelines</h3>
+                        <div class="legal-content">
+                            <p>Important usage information:</p>
+                            <ul>
+                                <li>Fair use policy applies</li>
+                                <li>Rate limits may be enforced</li>
+                                <li>Generated content requires attribution</li>
+                                <li>Commercial use may require license</li>
+                            </ul>
+                            <a href="#" class="legal-link">Read Guidelines</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Information -->
+            <section class="contact-info">
+                <h2><i class="fas fa-envelope"></i> Contact & Support</h2>
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <i class="fas fa-question-circle"></i>
+                        <h3>Support</h3>
+                        <p>Need help with HEXACOLA.AI?</p>
+                        <a href="mailto:taurisblog@gmail.com">taurisblog@gmail.com</a>
+                    </div>
+                    <div class="contact-card">
+                        <i class="fas fa-bug"></i>
+                        <h3>Report Issues</h3>
+                        <p>Found a bug or have a suggestion?</p>
+                        <a href="https://github.com/hexacola/hexacola.ai/issues" target="_blank">GitHub Issues</a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer must be the last element -->
+    <footer>
+        <p>
+            <a href="https://github.com/hexacola/hexacola-ai-creative/tree/main" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-github"></i> Source Code
+            </a>
+            |
+            API Documentation: <a href="https://github.com/pollinations/pollinations/blob/master/APIDOCS.md" target="_blank">Pollinations.AI</a>
+        </p>
+        <p>© 2024 Tauris – HEXACOLA AI</p>
+    </footer>
+
+    <script src="app.js"></script>
+    <script src="js/news.js"></script>
+    <script src="js/navigation.js"></script>
+    
+    <!-- Remove this entire inline script block -->
+    <!-- <script>
+        function navigateToHome() { ... }
+        function showGenerator() { ... }
+        function navigateToStoryboard() { ... }
+        function navigateToScriptwriter() { ... }
+        function navigateToChat() { ... }
+    </script> -->
+
+    <!-- Add this CSS to your style.css -->
+    <style>
+        .hero-section {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #b2c0a0 0%, #341274b9 74%);
+            color: white;
+            border-radius: 15px;
+            margin: 0 0 2rem 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(67, 119, 0, 0.95) 0%, rgba(81, 126, 10, 0.85) 74%);
+            z-index: 1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin: 1.5rem auto;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .primary-btn, .secondary-btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+            background: #ff9203e8;
+            color: white;
+            border: none;
+        }
+
+        .primary-btn:hover {
+            background: #ff9203;
+            transform: translateY(-2px);
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tool-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .tool-card i {
+            font-size: 2rem;
+            color: #91ff00;
+            margin-bottom: 1rem;
+        }
+
+        /* Updated fullscreen 16:9 layout */
+        .main-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin-top: 70px; /* Header height */
+            aspect-ratio: 16/9;
+            height: calc(100vh - 70px); /* Viewport height minus header */
+            overflow-y: auto;
+            position: relative;
+            padding: 0;
+        }
+
+        .container.active {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            height: 100%;
+        }
+
+        .hero-section {
+            aspect-ratio: 16/9;
+            width: 100%;
+            max-height: calc((100vh - 70px) * 0.6); /* 60% of available height */
+            margin: 0 0 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            width: 100%;
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-aspect-ratio: 16/9) {
+            .main-wrapper {
+                aspect-ratio: auto;
+                height: auto;
+            }
+
+            .hero-section {
+                aspect-ratio: auto;
+                min-height: 60vh;
+            }
+        }
+
+        /* Center content vertically */
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+        }
+
+        /* Ensure proper scaling of text */
+        .hero-content h1 {
+            font-size: clamp(2rem, 4vw, 4rem);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        /* Adjust grid layouts */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .status-badge {
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+
+        .status-badge.stable {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .status-badge.beta {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .status-badge.planned {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .development-status {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid #ff9800;
+            padding: 1rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .development-status h3 {
+            color: #ff9800;
+            margin-top: 0;
+        }
+
+        /* Add responsive styles */
+        @media (max-width: 768px) {
+            .status-badge {
+                display: block;
+                margin: 0.5rem 0;
+                text-align: center;
+            }
+        }
+
+        .scam-alert {
+            margin: 2rem 0;
+            padding: 1rem;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #ff6b6b20 0%, #ff6b6b40 100%);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 2rem;
+            color: var(--text-color);
+        }
+
+        .alert-box h2 {
+            color: #ff6b6b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-box ul {
+            list-style: none;
+            padding-left: 1rem;
+        }
+
+        .alert-box ul li {
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-box ul li::before {
+            content: "⚠️";
+            margin-right: 0.5rem;
+        }
+
+        .bottom-warning {
+            background: linear-gradient(to right, #ff6b6b10, #ff6b6b20);
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 3px solid #ff6b6b;
+        }
+
+        .warning-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #ff6b6b;
+            margin-bottom: 1.5rem;
+        }
+
+        .warning-header i {
+            font-size: 2rem;
+        }
+
+        .warning-content {
+            background: rgba(255, 107, 107, 0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .warning-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .warning-content ul li {
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .warning-contact {
+            text-align: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .warning-footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 1rem;
+        }
+
+        .license-info {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 10px;
+        }
+
+        .license-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .license-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .license-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .license-card.personal h3 { color: #4caf50; }
+        .license-card.commercial h3 { color: #2196f3; }
+        .license-card.restrictions h3 { color: #ff9800; }
+
+        .license-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .license-content ul li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .license-content ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+
+        .license-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .license-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</body>
+</html>

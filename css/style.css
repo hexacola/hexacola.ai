@@ -1,0 +1,5037 @@
+/* 
+  style.css – Modernized and Responsive Design 
+  -------------------------------------------------------------------------
+  This stylesheet is optimized for a clean, professional appearance with
+  a 16:9 ratio on larger screens, ensuring a sleek user experience across
+  desktop, tablet, and mobile devices.
+  Retains existing color scheme, transitions, and core functionalities
+  while enhancing layouts, spacing, accessibility, and interactive states.
+
+  Major improvements:
+  1. 16:9 container approach for large screens, automatically adjusting
+     to auto height on smaller devices.
+  2. Modern spacing/alignments using consistent margins and grid layouts.
+  3. Enhanced responsiveness and performance best practices (GPU transform,
+     content-visibility, local minima on images, etc.).
+  4. Improved accessibility with focus states, ARIA hints, and reading order.
+  5. Maintains Dark Mode overrides.
+
+  NEW OR UPDATED:
+  - Introduced fluid sizing (clamp) for better responsiveness on smaller/larger screens.
+  - Replaced some fixed widths/heights with minmax or clamp to avoid layout breakage.
+  - Used :focus-visible for more accessible focus outlines, leaving normal :focus for older browsers.
+  - Ensured consistent transitions using CSS variables.
+*/
+
+/* Updated FontAwesome to version 6 */
+@import url("https://use.fontawesome.com/releases/v6.4.0/css/all.css");
+
+/* CSS Variables for Color Schemes */
+/* 
+    CSS variables are used to store and reuse colors, sizes, and other values.
+    This makes it easier to maintain and change the design of your website.
+    For example, if you want to change the primary color, you can change it here,
+    and it will update throughout the whole site.
+*/
+:root {
+  /* Base Colors */
+  --background-color: #f5f5f5;
+  --surface-color: #ffffff;
+  --text-color: #333333;
+  --primary-color: #6b8e23;
+  --primary-hover: #556b2f;
+  --secondary-color: #8b4513;
+  --secondary-hover: #5a2d0c;
+  --accent-color: #d2b48c;
+  --accent-hover: #c49a7c;
+  --warning-bg: #ffe6e6; /* Light Reddish */
+
+  /* Element Colors */
+  --sidebar-bg: #fafafa;
+  --sidebar-border: #dcdcdc;
+  --chat-bg: #f0f0f0;
+  --button-bg: var(--primary-color);
+  --button-hover: var(--primary-hover);
+  --button-text: #ffffff;
+  --toggle-active-bg: var(--primary-color);
+  --toggle-active-text: var(--background-color);
+  --overlay-bg: rgba(245, 245, 245, 0.85);
+  --modal-bg: rgba(255, 255, 255, 0.95);
+  --caption-bg: rgba(255, 255, 255, 0.8);
+  --progress-bar-color: var(--primary-color);
+  --loader-border: var(--primary-color);
+  --footer-text: #777777;
+  --footer-link: var(--primary-color);
+  --card-bg: #f0f8ff;
+  --pastel-nav-bg: #f0f8f0;
+  --pastel-nav-border: #cce6cc;
+  --pastel-text: #333333;
+  --pastel-active-nav: #a3d9a3;
+  --pastel-active-nav-text: #ffffff;
+
+  /* Animation + Performance Variables */
+  --animation-timing: 0.3s;
+  --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-speed: 0.3s;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-duration: 0.5s;
+  --container-max-width: 2000px;
+  --border-radius: 10px;
+  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+  /* Additional Variables Referenced in Code */
+  --text-light: #ffffff;        /* For buttons/text on dark backgrounds */
+  --text-primary: #333333;      /* For headings, bold text */
+  --text-secondary: #666666;    /* Slightly lighter text */
+  --dark-gradient: #1e1e1e;     /* Fallback for hero in dark mode */
+  --dark-card-bg: #2c2c2c;      /* Dark mode card background */
+  --dark-accent: #8b4513;       /* Dark mode accent */
+  --dark-accent-hover: #5a2d0c; /* Dark mode accent hover */
+  --warning-color: #ff4444;
+  --hover-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+
+  /* Modern Color Palette */
+  --gradient-primary: linear-gradient(135deg, #6b8e23 0%, #556b2f 100%);
+  --gradient-secondary: linear-gradient(135deg, #8b4513 0%, #5a2d0c 100%);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+
+  /* New Creative Effect Variables */
+  --neon-primary: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+  --neon-secondary: 0 0 10px var(--secondary-color), 0 0 20px var(--secondary-color);
+  --wave-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --rotate-timing: cubic-bezier(0.4, 0, 0.6, 1);
+  
+  /* New Dark Mode Vars */
+  --surface-color-dark: #2c2c2c;
+  --border-color-dark: #444444;
+  --input-bg: #2c2c2c;
+  --primary-color-dark: #556b2f;
+
+}
+
+/* Dark Mode Overrides */
+/*
+    This section overrides the default color scheme when the 'dark-mode' class is added to the <body>.
+    It provides a dark and cohesive alternative for night use or user preference.
+*/
+body.dark-mode {
+  --background-color: #1e1e1e;
+  --surface-color: #2c2c2c;
+  --text-color: #e0e0e0;
+  --sidebar-bg: #2a2a2a;
+  --sidebar-border: #444444;
+  --chat-bg: #3a3a3a;
+  --pastel-nav-bg: #2a2a2a;
+  --pastel-nav-border: #444444;
+  --pastel-text: #e0e0e0;
+  --pastel-active-nav: #556b2f;
+  --pastel-active-nav-text: #e0e0e0;
+  --card-bg: #2e2e2e;
+  --warning-bg: #332424;
+  --surface-color: #1e1e1e;
+  --background-color: #121212;
+  --modal-bg: rgba(30, 30, 30, 0.95);
+}
+
+/* 
+  RESET & BASE LAYOUT
+  -------------------------------------------------------------------------
+*/
+
+/* Base styles and resets */
+/*
+    This section resets default browser styles to give a consistent base
+    for our custom styles. It also defines the core structure of the page.
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The main body container */
+/*
+    - `display: flex; flex-direction: column;` makes the body a flex container and arranges items vertically.
+    - `width: 100vw;` makes it take up full viewport width.
+    - `min-height: 100vh;` ensures the body is always at least the viewport height.
+    - `overflow-x: hidden;` hides any horizontal scrollbars.
+    - `font-family, background-color, color, transition` set up the basic text styles and animations.
+    - `scroll-behavior: smooth` gives smoother page scrolling when clicking a link.
+    - `text-rendering, -webkit-font-smoothing, -moz-osx-font-smoothing` these settings help with text appearance on different devices
+*/
+body {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 100vh; /* fallback for older browsers */
+  overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS Safari fix for 100vh issues */
+/*
+    This is a hack to address the problem where iOS Safari does not fully use the 100vh value when calculating height.
+    This ensures elements will properly fill the viewport on iOS.
+*/
+@supports (-webkit-touch-callout: none) {
+  html,
+  body {
+    height: -webkit-fill-available;
+  }
+  .main-wrapper,
+  .sidebar,
+  .container,
+  .library-container,
+  .main-content {
+    height: -webkit-fill-available;
+  }
+}
+
+/* 
+  16:9 Layout on Larger Screens
+  -------------------------------------------------------------------------
+  NEW OR UPDATED: 
+  - Used clamp on max-width to ensure fluid design on very large or small viewports.
+  - aspect-ratio remains for large screens, reverts to auto on smaller screens.
+*/
+/*
+  - `body > main` applies to the `<main>` tag within the `<body>`.
+  - `max-width: clamp(1200px, 90vw, var(--container-max-width));` uses `clamp()` to create a maximum width that's fluid based on the screen,
+    but also has minimum and maximum limits.
+  - `aspect-ratio: 16 / 9;` sets a fixed aspect ratio for wider screens.
+  - `margin: 0 auto;` centers the content horizontally within its container.
+*/
+body > main,
+.main-content {
+  max-width: clamp(1200px, 90vw, var(--container-max-width)); /* NEW OR UPDATED */
+  width: 90vw;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto; /* Center content horizontally */
+}
+@media (max-width: 768px) {
+  body > main,
+  .main-content {
+    aspect-ratio: auto !important;
+    width: 100%;
+  }
+}
+
+/* 
+  HEADER
+  -------------------------------------------------------------------------
+  Fixed at the top, with a drop shadow.
+  NEW OR UPDATED:
+  - Height, padding, font-sizes changed to clamp for better responsiveness.
+*/
+/*
+    - `position: fixed;` keeps the header at the top of the viewport during scrolling.
+    - `top: 0; left: 0;` fixes it to the top-left of the screen.
+    - `z-index: 1000;` keeps the header above other elements on the page.
+    - `display: flex; justify-content: space-between; align-items: center;` centers and spaces header elements.
+    - `background-color, border-bottom, box-shadow` add the styling for the header
+*/
+.main-header {
+  width: 100%;
+  height: auto;
+  min-height: 60px;
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--surface-color);
+  border-bottom: 1px solid var(--sidebar-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.logo {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center; /* Center the buttons */
+}
+
+.main-nav button {
+  padding: 8px 15px;
+  white-space: nowrap;
+}
+
+/* Ensure other nav buttons are properly aligned */
+.main-nav button:not(.login-btn):not(.dark-mode-toggle) {
+  margin-left: 0;
+}
+
+/* Main navigation container style */
+/*
+  - `display: flex;` makes the navigation elements sit inline.
+  - `gap` adds space between navigation buttons.
+  - `align-items: center;` centers elements vertically.
+*/
+.main-nav {
+  display: flex;
+  gap: clamp(0.5rem, 2vw, 1.25rem); /* NEW OR UPDATED */
+  align-items: center;
+}
+
+/* Style navigation button */
+/*
+    - `padding`, `border`, `border-radius` create the button look.
+    - `background-color` and `color` style the button's basic appearance.
+    - `transition` makes appearance changes smooth.
+    - `position: relative; overflow: hidden;` sets up for animations.
+    - `z-index: 1;` stacks elements on the Z axis
+    - `transition: transform` controls button hover animation
+*/
+.main-nav button {
+  padding: 8px clamp(0.8rem, 2vw, 1.25rem);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+  background-color: transparent;
+  color: var(--text-color);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: transform 0.3s var(--wave-timing);
+}
+/* Adds a hover effect for the navigation buttons. */
+.main-nav button::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--primary-color);
+  transition: all var(--transition-speed) var(--transition-timing);
+  transform: translateX(-50%);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: transform var(--transition-normal);
+  z-index: -1;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s var(--wave-timing);
+}
+
+/*
+    - `transform: translateX(100%)` animates a line from left to right on hover and active states.
+    - `left: 100%;` ensures that the animated line starts outside of the button
+*/
+.main-nav button:hover::before,
+.main-nav button.active::before {
+  width: 100%;
+  transform: translateX(100%);
+  left: 100%;
+}
+/* Makes active button look distinct by changing background and color */
+.main-nav button.active {
+  background-color: var(--primary-color);
+  color: var(--button-text);
+  position: relative;
+}
+/* Adds an underline to an active button for extra distinction */
+.main-nav button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+/* Basic hover styling for buttons */
+.main-nav button:hover {
+  background-color: var(--primary-hover);
+  color: var(--button-text);
+}
+
+/* Brain Button and Modal Styles */
+/*
+  - `display: flex;` uses flexbox to align items properly
+  - `align-items: center;` Centers items on the vertical axis
+  - `gap: 10px;` Adds spacing between elements
+*/
+.header-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/*
+  - `background: var(--primary-color);` Sets button background color
+  - `color: white;` Sets button text color
+  - `border: none;` Removes the border
+  - `border-radius: 50%;` Makes it circular
+  - `width: 40px; height: 40px;` Sets dimensions
+  - `display: flex; align-items: center; justify-content: center;` Centers inner content
+  - `cursor: pointer;` Makes the cursor change on hover
+  - `transition: all 0.3s ease;` Adds transition effect
+  - `position: relative; overflow: hidden;` Used for animation effects
+*/
+.brain-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Sets size for the button's icon */
+.brain-button i {
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
+/* Scale animation for icon on hover */
+.brain-button:hover i {
+    transform: scale(1.2);
+}
+
+/* Adds a "ripple" effect for the button's background when clicked */
+.brain-button::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Fades the "ripple" effect in on hover */
+.brain-button:hover::after {
+    opacity: 1;
+}
+
+/* Brain Memory Modal Enhancements */
+.brain-button {
+    position: relative;
+    overflow: hidden;
+}
+/* Styles the button pulse animation */
+.brain-button.pulse::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    animation: pulseEffect 1s ease-out;
+    pointer-events: none; /* Prevent interference with button clicks */
+}
+
+/* Defines the pulse animation */
+@keyframes pulseEffect {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+.brain-modal {
+    transition: opacity 0.3s ease;
+}
+
+.particles-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    background: var(--primary-color);
+    border-radius: 50%;
+    transition: opacity 0.3s ease;
+}
+
+/* Memory Display Enhancements */
+/* Styles the list of memories */
+.memory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Style each group of memories */
+.memory-group {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+/* Styles the date heading of each memory group */
+.memory-date {
+    color: var(--primary-color);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(107, 142, 35, 0.2);
+}
+
+/* Styles each individual memory item */
+.memory-item {
+    background: var(--surface-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transitions */
+}
+
+/* Adds a hover animation */
+.memory-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Visual feedback for connected memories */
+.memory-item.connected {
+    border: 1px solid var(--primary-color);
+    background: rgba(107, 142, 35, 0.05);
+}
+
+/* Styles time of the memory */
+.memory-time {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+/* Styles the main content of the memory item */
+.memory-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 200px;
+    overflow-y: auto;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0.05); /* For Firefox */
+}
+
+/* Style the memory list */
+.memory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Style individual memory items */
+.memory-item {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 0.9em;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Hover effect for memory items */
+.memory-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the scrollbar for memory content */
+.memory-content::-webkit-scrollbar {
+    width: 5px; /* Adjust width as needed */
+}
+
+.memory-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05); /* Adjust track color as needed */
+    border-radius: 10px;
+}
+
+.memory-content::-webkit-scrollbar-thumb {
+    background: var(--primary-color); /* Adjust thumb color as needed */
+    border-radius: 10px;
+}
+
+.memory-content::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover); /* Adjust thumb hover color as needed */
+}
+
+/* Styles memory message */
+.memory-message {
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+/* Styles the tag container */
+.context-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+/* Styles individual tags */
+.context-tag {
+    background: rgba(107, 142, 35, 0.1);
+    color: var(--primary-color);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+}
+
+/* Dark Mode Adjustments */
+.dark-mode .memory-group {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dark-mode .memory-item {
+    background: var(--surface-color);
+}
+
+.dark-mode .context-tag {
+    background: rgba(107, 142, 35, 0.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .brain-modal-content {
+        width: 95%;
+        height: 90vh;
+        margin: 5vh auto;
+    }
+
+    .memory-group {
+        padding: 10px;
+    }
+
+    .memory-item {
+        padding: 10px;
+    }
+}
+
+/* Brain Modal */
+/*
+    - `display: none;` to hide the modal initially.
+    - `position: fixed;` positions the modal above other content on the screen.
+    - `width: 100%; height: 100%;` makes it cover the entire viewport.
+    - `background: rgba(0, 0, 0, 0.8);` creates a semi-transparent overlay.
+    - `z-index: 2000;` ensures it stays on top.
+    - `backdrop-filter: blur(5px);` blurs content behind the modal.
+*/
+.brain-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+/*
+    - `position: relative;` ensures any children will be positioned in relation to this.
+    - `width, height, margin` set the modal's size.
+    - `background: var(--surface-color);` sets its color.
+    - `border-radius` rounds the corners.
+    - `padding` add some space inside the content area
+    - `display: flex; flex-direction: column; gap: 20px;` arranges content and adds spacing.
+    - `overflow: hidden;` hides any overflowing content.
+*/
+.brain-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;
+    margin: 5vh auto;
+    background: var(--surface-color);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/*
+   - `flex: 1;` makes this take the available vertical space within the modal
+   - `min-height` establishes a base height to accommodate content.
+   - `background: rgba(0, 0, 0, 0.05);` provides a background to improve visability
+   - `border-radius` Rounds the corners
+   - `overflow: hidden` prevents the content from overflowing
+*/
+.brain-visualization {
+    flex: 1;
+    position: relative;
+    min-height: 300px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/*
+  - `position: absolute;` to allow for precise positioning
+  - `width: 100%; height: 100%;` ensures it covers the brain visualization
+  - `display: flex; align-items: center; justify-content: center;` centers its content
+*/
+.brain-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/*
+    - `position: absolute;` to allow for precise positioning
+    - `width: 100%; height: 100%;` ensures it covers the brain visualization
+*/
+.particles-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/*
+    - `position: absolute;` to allow for precise positioning
+    - `border-radius: 50%;` to make it circular
+*/
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    pointer-events: none;
+}
+/*
+    - `width` and `height` set the overall size of the SVG element
+    - `opacity: 0.2;` makes it transparent to make the neural path more prominent
+*/
+.brain-svg {
+    width: 200px;
+    height: 200px;
+    opacity: 0.2;
+}
+
+/*
+    - `fill: none;` prevents the shape from being filled
+    - `stroke: var(--primary-color);` sets the line color
+    - `stroke-width: 2;` sets the line width
+*/
+.brain-path {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 2;
+}
+
+/*
+    - `height: 200px; overflow-y: auto;` creates a scrollable section for memories
+    - `padding: 15px;` adds some space around memory items
+    - `background: rgba(0, 0, 0, 0.05); border-radius: 10px;` stylizes the background
+*/
+.memory-content {
+    height: 200px;
+    overflow-y: auto;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+/* Style the memory list */
+.memory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Style individual memory items */
+.memory-item {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 0.9em;
+    animation: fadeIn 0.3s ease;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transitions */
+}
+
+/* Hover effect for memory items */
+.memory-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the scrollbar for memory content */
+.memory-content::-webkit-scrollbar {
+    width: 5px; /* Adjust width as needed */
+}
+
+.memory-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05); /* Adjust track color as needed */
+    border-radius: 10px;
+}
+
+.memory-content::-webkit-scrollbar-thumb {
+    background: var(--primary-color); /* Adjust thumb color as needed */
+    border-radius: 10px;
+}
+
+.memory-content::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover); /* Adjust thumb hover color as needed */
+}
+
+/* Styles the close modal button */
+.close-brain-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+}
+
+/* Dark mode adjustments */
+.dark-mode .brain-modal-content {
+    background: var(--surface-color);
+}
+
+.dark-mode .memory-item {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 
+  MAIN WRAPPER
+  -------------------------------------------------------------------------
+  Offsets content below the header and above the footer.
+*/
+/*
+    - `margin-top` sets an offset from the header.
+    - `min-height` ensures that the wrapper is at least the height of the viewport minus the header and footer.
+    - `width: 100%;` takes up the full viewport width.
+    - `padding: 0; display: flex; gap: 25px;` setups flexbox for the layout.
+    - `transform, backface-visibility, perspective` are used for better performance on animations
+    - `overflow-y: auto;` makes the main content scrollable
+    - `height: auto;` makes the height fluid based on its contents
+*/
+.main-wrapper {
+  margin-top: clamp(3rem, 8vw, 4rem); /* offset by header height – NEW OR UPDATED for fluid spacing */
+  min-height: calc(100vh - clamp(3rem, 8vw, 4rem) - 80px);
+  width: 100%;
+  padding: 0 1rem;
+  display: flex;
+  position: relative;
+  box-sizing: border-box;
+  gap: 20px;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  overflow-y: auto; /* Allow scrolling */
+  height: auto; /* Remove fixed height */
+}
+
+/* 
+  SIDEBAR
+  -------------------------------------------------------------------------
+  Sticks below the header, to the side. 
+  NEW OR UPDATED: 
+  - Width changed to clamp for fluid sidebars on different screen sizes.
+*/
+/*
+    - `width: clamp(220px, 22vw, 300px);` Makes the sidebar's width flexible while limiting it to a specific range.
+    - `height: calc(100vh - clamp(3rem, 8vw, 4rem) - 80px);` Makes it fit within the view, accounting for header and footer.
+    - `position: sticky; top: clamp(3rem, 8vw, 4rem);` Makes it stay in the viewport.
+    - `overflow-y: auto;` Allows the sidebar to be scrolled when there is too much content.
+    - `flex-shrink: 0;` Prevents the sidebar from shrinking.
+    - `background-color, border-right, padding, box-sizing` are for styling the sidebar.
+    - `display: flex; flex-direction: column;` sets up a vertical arrangement
+    - `animation: fadeInRight 0.5s ease-out; transition: background-color, box-shadow;` sets up animations
+    - `background: linear-gradient, backdrop-filter` makes the sidebar look cool
+*/
+.sidebar {
+  width: clamp(220px, 22vw, 300px); /* NEW OR UPDATED */
+  height: calc(100vh - clamp(3rem, 8vw, 4rem) - 80px);
+  position: sticky;
+  top: clamp(3rem, 8vw, 4rem);
+  overflow-y: auto;
+  flex-shrink: 0;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInRight 0.5s ease-out;
+  transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+  background: linear-gradient(
+    to bottom,
+    rgba(107, 142, 35, 0.05),
+    rgba(107, 142, 35, 0.02)
+  );
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Adds a slight box-shadow on hover */
+.sidebar:hover {
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.05);
+}
+
+/* Sidebar headings */
+/*
+    - `margin-top: 0;` removes default margin
+    - `color: var(--primary-color); font-size: 1.6em;` makes the header stand out
+    - `animation: fadeInDown 0.5s ease-out;` adds a smooth animation when the element appears
+*/
+.sidebar h2 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: 1.6em;
+  margin-bottom: 15px;
+  animation: fadeInDown 0.5s ease-out;
+}
+
+/* Style for the library button */
+/*
+    - `width: 100%;` Makes the button fill the width of the sidebar
+    - `padding: 12px 15px; font-size: 1em;` styles the text
+    - `border: none; border-radius: 8px;` styles the button's border
+    - `cursor: pointer;` Makes cursor change on hover.
+    - `transition: background-color, transform, box-shadow;` Makes appearance changes smooth.
+    - `color, display, align-items, justify-content, gap` styles text and alignment
+    - `background-color, box-shadow` adds to the styling of the button
+    - `margin-top: 10px; animation: fadeInUp;` styles spacing and animation
+*/
+.sidebar .library-button {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), transform 0.2s, box-shadow var(--transition-speed);
+  color: var(--button-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--secondary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Animation for the sidebar library button */
+.sidebar .library-button:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 
+  TOP NAV
+  -------------------------------------------------------------------------
+*/
+/*
+    - `display: flex; justify-content: center;` sets up a centered navigation
+    - `background-color` sets background color for navbar
+    - `border-bottom` makes it visible
+    - `padding, width, box-sizing, gap, margin-bottom, position, top, z-index` positions and styles navbar
+*/
+.top-nav {
+  display: flex;
+  justify-content: center;
+  background-color: var(--pastel-nav-bg);
+  border-bottom: 1px solid var(--pastel-nav-border);
+  padding: 8px 15px;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 8px;
+  margin-bottom: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+/*
+    - `padding` adds spacing within the button
+    - `border` removes default button border
+    - `border-radius` makes the button rounded
+    - `cursor` shows hover interaction
+    - `transition` creates a smooth color transition
+    - `color` sets text color
+    - `background-color: transparent` makes the button blend in
+    - `font-size` sets button text size
+    - `display: flex, align-items: center, gap` arranges button elements
+*/
+.top-nav .nav-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+  color: var(--pastel-text);
+  background-color: transparent;
+  font-size: 0.98em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+/* Adds background color when hovered over */
+.top-nav .nav-button:hover {
+  background-color: var(--pastel-nav-border);
+}
+/* Style for an active button */
+.top-nav .nav-button.active {
+  background-color: var(--pastel-active-nav);
+  color: var(--pastel-active-nav-text);
+}
+/* Style hover for the active button */
+.top-nav .nav-button.active:hover {
+  background-color: var(--pastel-active-nav-text);
+  color: var(--pastel-text);
+}
+
+/* 
+  CONTENT AREA
+  -------------------------------------------------------------------------
+*/
+/*
+    - `display: flex; flex-direction: column;` sets up vertical flow
+    - `width: 100%;` takes up the full width of its parent
+    - `max-width: 1920px;` limits maximum size
+    - `margin: 0 auto;` centers horizontally
+    - `padding: 0; gap: 20px;` controls spacing and padding
+*/
+.content-area {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0;
+  gap: 20px;
+}
+
+/* 
+  INPUT GROUPS
+  -------------------------------------------------------------------------
+*/
+/*
+    - `margin-bottom: 25px; text-align: left;` sets spacing and text direction
+    - `position: relative;` allows absolute positioning of elements
+*/
+.input-group {
+  margin-bottom: 25px;
+  text-align: left;
+  position: relative;
+}
+/*
+    - `display: block;` makes label sit above the input
+    - `margin-bottom: 10px;` sets spacing below the label
+    - `font-weight, color, font-size` sets the style of the label
+    - `animation: fadeInLeft 0.5s ease-out;` makes the label slide in
+*/
+.input-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: var(--primary-color);
+  font-size: 1em;
+  animation: fadeInLeft 0.5s ease-out;
+}
+/* Button styles in input group */
+/*
+    - `width: 100%;` makes the button fill its parent
+    - `padding, font-size` controls text
+    - `border, border-radius` styles border
+    - `cursor, transition` adds visual feedback
+    - `color, display, align-items, justify-content, gap` sets style and alignment
+    - `background-color, box-shadow, animation` provides style and animation
+*/
+.input-group button {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), transform 0.2s, box-shadow var(--transition-speed);
+  color: var(--button-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--button-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.5s ease-out;
+}
+/* Hover animation for input group buttons */
+.input-group button:hover {
+  background-color: var(--button-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 
+  TOOLTIP STYLES
+*/
+/*
+    - `position: relative; display: inline-block;` to allow tooltips
+*/
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+/* Changes cursor on hover */
+.tooltip:hover {
+  cursor: help;
+}
+/*
+    - `visibility: hidden;` hides tooltip initially
+    - `width: 180px; background-color, color, text-align` styles the basic look
+    - `border-radius, padding, position, z-index, bottom, left, transform, opacity, transition` adds animation and position
+    - `font-size` sets tooltip text
+*/
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 180px;
+  background-color: #555555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 135%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+  font-size: 0.85em;
+}
+/* Makes tooltip visible on hover */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 
+  CHAT AREA
+  -------------------------------------------------------------------------
+*/
+/*
+    - `flex: 1;` makes the chat section expand as needed.
+    - `display: flex; flex-direction: column;` sets a vertical flow
+    - `background-color, border, border-radius, padding, box-shadow` styles the look
+    - `overflow-y: auto;` makes it scrollable when content is too long
+    - `margin: 0; box-sizing: border-box;` fixes margins and sizing
+    - `height: calc(100vh - 350px);` makes it fit view and account for model selector
+    - `max-height: none;` allows the chat to grow if needed
+    - `margin-bottom: 160px;` space for model selector and input group
+*/
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--chat-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  margin: 0;
+  box-sizing: border-box;
+  height: calc(100vh - 350px); /* Adjusted to account for model selector */
+  max-height: none; /* Remove max-height limitation */
+  margin-bottom: 160px; /* Space for model selector + input */
+}
+
+/*
+    - `margin-bottom: 20px;` sets spacing below message
+    - `padding, border-radius` sets inner spacing and border
+    - `background-color, color` sets message background and text color
+    - `word-wrap, white-space, transition, animation` styles text and transitions
+    - `overflow-wrap, max-width, margin, position, content-visibility, contain-intrinsic-size` styles text layout
+*/
+.chat-message {
+  margin-bottom: 20px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  color: var(--text-color);
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  transition: background-color var(--transition-speed), transform 0.2s, box-shadow var(--transition-speed);
+  animation: slideIn 0.5s ease-out;
+  overflow-wrap: break-word;
+  max-width: calc(100% - 50px);
+  margin: 5px 0;
+  position: relative;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 100px;
+}
+/* Scales chat message on hover */
+.chat-message:hover {
+  transform: scale(1.02);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+/* Sets base styling for message paragraphs */
+.chat-message p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+/* Sets base styling for message code blocks */
+.chat-message pre {
+  margin: 10px 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+/* Sets base styling for inline code elements */
+.chat-message code {
+  font-family: 'Fira Code', monospace;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+/* Removes unneeded background on code blocks */
+.chat-message pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Style for user chat messages */
+/*
+    - `background-color: var(--primary-color);` makes user messages distinct
+    - `align-self: flex-end;` moves user messages to the right
+    - `color: var(--button-text);` sets text color
+*/
+.chat-message.user {
+  background-color: var(--primary-color);
+  align-self: flex-end;
+  color: var(--button-text);
+}
+/* Styles the assistant messages */
+/*
+    - `background-color: #dcdcdc;` makes assistant messages distinct
+    - `align-self: flex-start;` moves assistant messages to the left
+    - `margin-left: 45px;` adds a margin for avatar
+*/
+.chat-message.assistant {
+  background-color: #dcdcdc;
+  align-self: flex-start;
+  margin-left: 45px;
+}
+/* Adds an assistant avatar on the left side */
+.chat-message.assistant::before {
+  content: '';
+  position: absolute;
+  left: -45px;
+  top: 0;
+  width: 35px;
+  height: 35px;
+  background-image: url(../images/hexacola-chat.png); /* Remove quotes for better compatibility */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+}
+/* Animation for typing messages */
+.chat-message.typing {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+/* Dot style for typing animation */
+.typing .dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: inline-block;
+  animation: bounce 1.3s linear infinite;
+}
+/* Delay for second dot */
+.typing .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+/* Delay for third dot */
+.typing .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+/* Bounce animation */
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+/* Change typing dot color in dark mode */
+.dark-mode .typing .dot {
+  background: #fff;
+}
+
+/* Chat input group */
+/*
+    - `position: fixed;` keeps the input above the footer
+    - `bottom: 80px; left: 0;` positions the input
+    - `width: 100%;` takes full width
+    - `padding, background-color, border-top, margin, z-index` styles the input group
+    - `display: flex; gap: 10px; box-sizing` uses flexbox and defines sizing
+*/
+.chat-input-group {
+  position: fixed;
+  bottom: 80px; /* Position above footer */
+  left: 0;
+  width: 100%;
+  padding: 15px 40px;
+  background-color: var(--surface-color);
+  border-top: 1px solid var(--sidebar-border);
+  margin: 0;
+  z-index: 100;
+  display: flex;
+  gap: 10px;
+  box-sizing: border-box;
+}
+/* Dark mode adjustments */
+.dark-mode .chat-input-group {
+  background-color: #1e1e1e;
+  border-color: #444;
+}
+/* Styles the input element */
+/*
+    - `flex: 1;` makes the input expand
+    - `padding, border, border-radius, background-color, color, transition, box-shadow, font-size` styles the look and animations
+*/
+.chat-input-group input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 8px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+  box-shadow: inset 0 0 8px rgba(107, 142, 35, 0.1);
+  font-size: 1em;
+}
+/* Focus effect */
+.chat-input-group input:focus {
+  outline: none;
+  border-color: var(--primary-hover);
+}
+/* Styles the submit button */
+/*
+    - `padding, font-size, border, border-radius, cursor, transition, color, background-color, display, align-items, gap, box-shadow` sets the style for submit button
+*/
+.chat-input-group button {
+  padding: 12px 20px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), transform 0.2s, box-shadow var(--transition-speed);
+  color: var(--button-text);
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Add a more pronounced hover effect */
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Hover animation for submit button */
+.chat-input-group button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Update chat controls positioning */
+/*
+    - `position: fixed; bottom: 80px; left: 0;` fixes the controls above the footer
+    - `width: 100%;` makes it fill the screen width
+    - `background-color, border-top, z-index, padding` styles the controls
+*/
+.chat-controls {
+  position: fixed;
+  bottom: 80px; /* Position above footer */
+  left: 0;
+  width: 100%;
+  background-color: var(--surface-color);
+  border-top: 1px solid var(--sidebar-border);
+  z-index: 100;
+  padding: 10px 40px;
+}
+
+/* Margin spacing */
+.model-selector {
+  margin-bottom: 10px;
+}
+
+/* Model select styles */
+/*
+    - `width: 200px; padding: 8px 12px; border: 1px solid var(--sidebar-border); border-radius: 6px; background-color: var(--surface-color); color: var(--text-color);` styles the model select dropdown
+*/
+#modelSelect {
+  width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 6px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  font-size: 0.9em;
+}
+
+/* 
+  CONTAINER
+  -------------------------------------------------------------------------
+*/
+/*
+    - `width: 100%;` takes full width
+    - `margin: 0;` removes margins
+    - `padding: 40px;` adds space inside
+    - `box-sizing, background-color, border, border-radius, box-shadow, transition, position, display, flex-direction` styles the look and transitions
+    - `height: auto; min-height: calc(100vh - clamp(3rem, 8vw, 4rem) - 80px);` sets height and min-height
+*/
+.container,
+.library-container {
+  width: 100%;
+  margin: 0;
+  padding: 40px;
+  box-sizing: border-box;
+  background-color: var(--surface-color);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+  position: relative;
+  display: none;
+  flex-direction: column;
+  height: auto; /* Remove fixed height */
+  min-height: calc(100vh - clamp(3rem, 8vw, 4rem) - 80px);
+}
+
+/*
+    - `display: flex;` displays when class is active
+    - `width: 100%; max-width: 100%; margin: 0;` sets sizing
+    - `padding, box-sizing` controls spacing
+    - `margin-top: 60px;` accounts for header
+    - `height: auto; min-height: calc(100vh - 60px);` sets height and min-height
+    - `overflow-y: visible;` makes content scrollable
+    - `background, backdrop-filter` adds cool effects
+*/
+.container.active,
+.library-container.active {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 20px 40px 100px 40px; /* Added bottom padding to prevent content being hidden */
+  box-sizing: border-box;
+  margin-top: 60px; /* account for fixed header */
+  height: auto; /* Remove fixed height */
+  min-height: calc(100vh - 60px); /* Full viewport height minus header */
+  overflow-y: visible; /* Allow content to scroll */
+  background: linear-gradient(
+    to bottom,
+    rgba(107, 142, 35, 0.05),
+    rgba(107, 142, 35, 0.02)
+  );
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Header styles for the main content area */
+/*
+    - `margin-bottom: 25px; display: flex, align-items: center, justify-content: center, gap` centers and styles main content headers
+*/
+.header {
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+/* Header text styles */
+/*
+    - `font-size: 2.5em; margin: 0; color: var(--primary-color);` sets base header look
+    - `text-shadow` adds a subtle shadow
+    - `text-align: center; animation: fadeInDown;` aligns text and adds animation
+*/
+.header h1,
+.library-container h2 {
+  font-size: 2.5em;
+  margin: 0;
+  color: var(--primary-color);
+  text-shadow: 0 0 10px rgba(107, 142, 35, 0.7);
+  text-align: center;
+  animation: fadeInDown 0.5s ease-out;
+}
+
+/* 
+  TEXT INPUTS AND SELECTS
+*/
+/*
+    - `padding, border, border-radius, resize, font-size, background-color, color, transition, box-shadow, width, box-sizing` styles basic form input elements
+*/
+.input-group textarea,
+.input-group input,
+.input-group select {
+  padding: 12px 15px;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 8px;
+  resize: vertical;
+  font-size: 1em;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+  box-shadow: inset 0 0 8px rgba(107, 142, 35, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Focus animation for inputs */
+.input-group textarea:focus,
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--primary-hover);
+}
+
+/* 
+  FEATURE TOGGLES
+*/
+/*
+    - `display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));` sets up the layout for the feature toggle buttons.
+    - `gap: 20px; margin-bottom: 25px; animation: fadeInUp 0.5s ease-out;` adds spacing and animation
+*/
+.toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+  animation: fadeInUp 0.5s ease-out;
+}
+/* Styles a toggle group */
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+}
+/* Styles a toggle group label */
+.toggle-group label {
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: var(--primary-color);
+  font-size: 1em;
+}
+/* Button styles for a toggle group */
+/*
+    - `display: flex; flex-wrap: wrap; gap: 10px;` defines button layout
+    - `max-height: 200px; overflow-y: auto;` styles scrollability
+    - `padding-right: 5px;` Adds right padding
+*/
+.toggle-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+/* Styles individual toggle buttons */
+/*
+    - `padding, font-size, border, border-radius, background-color, color, cursor, transition` styles the appearance and transitions
+*/
+.toggle-buttons button {
+  padding: 10px 16px;
+  font-size: 0.95em;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 25px;
+  background-color: transparent;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color var(--transition-speed), color var(--transition-speed), transform 0.2s, box-shadow var(--transition-speed);
+}
+/* Styles an active toggle button */
+.toggle-buttons button.active {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  transform: scale(1.05);
+}
+/* Styles toggle buttons on hover */
+.toggle-buttons button:hover {
+  background-color: var(--primary-hover);
+  color: var(--background-color);
+  transform: scale(1.07);
+}
+
+/* 
+  DESCRIPTION BOX
+*/
+/*
+    - `margin-bottom: 25px; padding: 15px; border: 1px solid var(--sidebar-border);` styles base layout
+    - `width: 100%; background-color: var(--chat-bg); border-radius: 8px;` sets background and shape
+    - `color: var(--text-color); box-sizing: border-box; transition: background-color, color` sets text styling
+    - `font-size: 0.95em; animation: fadeIn 0.5s ease-out;` styles font and animation
+*/
+.description {
+  margin-bottom: 25px;
+  padding: 15px;
+  border: 1px solid var(--sidebar-border);
+  width: 100%;
+  background-color: var(--chat-bg);
+  border-radius: 8px;
+  color: var(--text-color);
+  box-sizing: border-box;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+  font-size: 0.95em;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 
+  BUTTONS
+*/
+/*
+    - `display: flex; justify-content: center; gap: 20px;` styles button layout
+    - `margin-bottom: 25px; flex-wrap: wrap; animation: fadeInUp 0.5s ease-out;` styles spacing
+*/
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.5s ease-out;
+}
+/*
+    - `padding, font-size, border, border-radius, cursor, transition, color, display, align-items, gap, box-shadow` sets the style for buttons
+    - `position, overflow, transition: transform` sets up animations
+*/
+.buttons button {
+  padding: 14px 28px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), transform 0.2s, box-shadow var(--transition-speed);
+  color: var(--button-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--wave-timing);
+}
+/* styles the button hover animation*/
+.buttons button::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.buttons button:hover::after {
+  opacity: 1;
+}
+/* Style for generate button */
+.buttons button.generate {
+  background-color: var(--primary-color);
+}
+/* Hover animation for generate button */
+.buttons button.generate:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+/* Styles for dark mode toggle */
+.buttons button.dark-mode-toggle {
+  background-color: var(--secondary-color);
+  color: #ffffff;
+}
+/* Hover animation for dark mode button */
+.buttons button.dark-mode-toggle:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+/* Style for auto toggle */
+.buttons button.auto-toggle {
+  background-color: var(--accent-color);
+  color: #000000;
+}
+/* Style for when the auto toggle is active */
+.buttons button.auto-toggle.active {
+  background-color: var(--primary-hover);
+  color: #fff;
+}
+/* Hover effect for auto-toggle button */
+.buttons button.auto-toggle:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+/* Clear library button */
+.buttons button.clear-library {
+  background-color: #ff6347;
+}
+/* Hover effect for clear library button */
+.buttons button.clear-library:hover {
+  background-color: #cc4f3b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+/* Download button styles */
+.buttons button.download {
+  background-color: var(--secondary-color);
+}
+/* Download button hover effect */
+.buttons button.download:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Continue Button */
+/*
+    - `margin-top: 8px; padding: 6px 12px; background-color: var(--primary-color); color: var(--button-text);` styles basic look
+    - `border, border-radius` sets the border
+    - `cursor` style pointer on hover
+    - `font-size, display, align-items, gap` styles text and elements
+    - `transition, opacity` adds transitions
+*/
+.continue-button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: var(--primary-color);
+  color: var(--button-text);
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all var(--transition-speed) ease;
+  opacity: 0.9;
+}
+/* Hover effect for the continue button */
+.continue-button:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+/* Sets styling for the continue button's icon */
+.continue-button i {
+  font-size: 0.9em;
+}
+/* Dark mode adjustments for continue button */
+.dark-mode .continue-button {
+  background-color: var(--primary-hover);
+}
+
+/* 
+  GENERATED IMAGES 
+*/
+/*
+    - `display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;` sets the grid layout for the generated images
+    - `width: 100%; box-sizing: border-box; justify-items: center; align-items: start; margin-top: 25px; margin-bottom: 100px;` sets size and position
+    - `height: auto; overflow: visible;` makes the container fluid
+*/
+.generated-image,
+.library-container .generated-image {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-items: center;
+  align-items: start;
+  margin-top: 25px;
+  margin-bottom: 100px;
+  height: auto; /* Remove any fixed height */
+  overflow: visible; /* Allow content to flow */
+}
+
+/* Update image container styles */
+/*
+    - `width: 100%; max-width: 300px; min-height: 400px; position: relative;` sets width, height and positioning.
+    - `border: 1.5px solid var(--primary-color); border-radius: 10px; overflow: hidden;` styles the border and overflow.
+    - `transition: transform, box-shadow;` adds transitions
+    - `display: flex; flex-direction: column;` uses flexbox and makes it arrange elements vertically.
+    - `background-color, margin: 0 auto;` provides style
+*/
+.image-container {
+  width: 100%;
+  max-width: 300px;
+  min-height: 400px;
+  position: relative;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-color);
+  margin: 0 auto;
+}
+
+/*
+    - `width: 100%; height: 300px;` sets size for the image
+    - `object-fit: cover;` makes the image fit inside the container
+    - `display: block !important;` makes the image always display.
+    - `background-color: #f0f0f0;` provides a background incase the image hasn't fully loaded
+*/
+.image-container img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block !important; /* Force image display */
+  background-color: #f0f0f0; /* Add background color to see container */
+}
+
+/* Caption styles */
+/*
+    - `position: relative;` keeps the caption near the image
+    - `bottom: 0; left: 0; width: 100%;` sets the position and size
+    - `background, color, padding, box-sizing` styles the look
+    - `font-size: 0.85em;` sets the font size
+    - `opacity: 1; height: 100px; overflow-y: auto;` sets the opacity and overflow of the caption
+*/
+.caption {
+  position: relative; /* Changed from absolute */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--caption-bg);
+  color: var(--text-color);
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 0.85em;
+  opacity: 1; /* Changed from 0 */
+  height: 100px; /* Fixed height for caption */
+  overflow-y: auto;
+}
+/* styles the download button container */
+.download-options {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 5px;
+  border-radius: 5px;
+}
+
+/* Responsive adjustments */
+/*
+    - Makes images smaller on smaller screens
+*/
+@media (max-width: 768px) {
+  .generated-image,
+  .library-container .generated-image {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .image-container {
+    width: 250px;
+    height: 350px;
+  }
+/* Make chat controls more compact */
+  .chat-controls {
+    padding: 10px 20px;
+  }
+
+  /* Make chat smaller */
+  .chat {
+    height: calc(100vh - 380px);
+    margin-bottom: 180px;
+  }
+/* Make container less padded on smaller screens */
+  .container.active {
+    padding: 10px 10px 120px 10px;
+    margin-top: 110px;
+    height: auto; /* Remove fixed height */
+    min-height: calc(100vh - 110px);
+    overflow-y: visible; /* Allow content to scroll */
+  }
+/* Make main wrapper more mobile friendly */
+  .main-wrapper {
+    height: auto; /* Remove fixed height */
+    min-height: calc(100vh - 110px);
+    overflow-y: visible; /* Allow content to scroll */
+  }
+}
+
+/*
+    - Changes image layout on very small screens
+*/
+@media (max-width: 480px) {
+  .generated-image,
+  .library-container .generated-image {
+    grid-template-columns: 1fr;
+  }
+
+  .image-container {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* 
+  LOADER AND OVERLAY
+*/
+/*
+    - `border: 8px solid #f3f3f3; border-top: 8px solid var(--loader-border);` sets the loader's basic look
+    - `border-radius: 50%;` makes the loader circle
+    - `width: 70px; height: 70px;` sets the size
+    - `animation: spin 1s linear infinite;` adds animation
+    - `position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;` positions it in the center
+    - `width: 50px; height: 50px;` sets its size
+    - `border: 3px solid var(--primary-color); border-top-color: transparent; animation: rotateGlow 2s linear infinite;` creates the spinning look
+    - `box-shadow: var(--neon-primary);` adds the neon look
+*/
+.loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid var(--loader-border);
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  animation: spin 1s linear infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--primary-color);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: rotateGlow 2s linear infinite;
+  box-shadow: var(--neon-primary);
+}
+/*
+    - `position: absolute; top: 0; left: 0; width: 100%; height: 100%;` makes the overlay cover its parent
+    - `background: var(--overlay-bg);` adds background
+    - `display: none; align-items: center; justify-content: center;` hides overlay initially and then centers elements
+    - `border-radius: 10px;` makes the corners round
+    - `z-index: 9;` makes it appear over most elements
+    - `flex-direction, gap, animation` styles flexbox and animations
+*/
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--overlay-bg);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  z-index: 9;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.5s ease-out;
+  backdrop-filter: blur(5px); /* Add backdrop filter */
+}
+
+/* Styles the container for the progress bar */
+.progress-container {
+  width: 85%;
+  background-color: #cccccc;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+/*
+    - `height: 22px; width: 0%;` sets progress bar size
+    - `background-color: var(--progress-bar-color);` sets color
+    - `transition: width var(--transition-speed);` sets transition
+*/
+.progress-bar {
+  height: 22px;
+  width: 0%;
+  background-color: var(--progress-bar-color);
+  transition: width var(--transition-speed);
+}
+
+/* 
+  FOOTER
+  -------------------------------------------------------------------------
+*/
+/*
+    - `position: fixed; bottom: 0; left: 0; width: 100%; height: 80px;` positions the footer
+    - `padding: 20px 40px;` sets spacing
+    - `background: var(--surface-color);` sets background color
+    - `z-index: 100;` makes sure the footer stays above the rest
+    - `box-shadow` adds shadow effect
+    - `box-sizing, position, z-index, font-size, color, text-align` makes sure everything is styled right
+*/
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  padding: 20px 40px;
+  background: var(--surface-color);
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  font-size: 0.85em;
+  color: var(--footer-text);
+  text-align: center;
+  background: var(--surface-color);
+}
+/* Sets the color and text styling for the footer links */
+footer a {
+  color: var(--footer-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+/* Adds underline on hover */
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* 
+  MODAL
+*/
+/*
+    - `display: none;` hides initially
+    - `position: fixed;` places over everything
+    - `z-index: 1001;` makes sure it's on top
+    - `left, top, width, height, overflow` sets position and sizing
+    - `background-color` makes it a bit dark
+    - `backdrop-filter` makes it blur the background
+    - `transform, backface-visibility, perspective` improves rendering
+*/
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1001; /* Ensure modal appears above footer */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+/*
+    - `background-color, margin, padding, border, width, max-width, border-radius, position, backdrop-filter` sets styles
+    - `clip-path` adds a cool shape effect
+    - `transition` adds animations
+*/
+.modal-content {
+  background-color: var(--surface-color);
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid var(--sidebar-border);
+  width: 90%;
+  max-width: 900px;
+  border-radius: 8px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 10% 100%, 0 90%);
+  transition: clip-path 0.5s var(--wave-timing);
+}
+/* Changes clip-path on hover */
+.modal-content:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 15% 100%, 0 85%);
+}
+/* Styles the image in the modal */
+.modal-image {
+  max-width: 100%;
+  height: auto;
+}
+/* Styles the prompt in the modal */
+/*
+    - `padding: 20px; border-radius: 8px;` styles the prompt box
+    - `max-height: 80vh; overflow-y: auto;` makes it scrollable
+*/
+.modal-prompt {
+  padding: 20px;
+  border-radius: 8px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+/* Styles the modal prompt headers */
+.modal-prompt h3 {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+/* Styles code blocks in modal prompt */
+/*
+    - `background, padding, border-radius, white-space, word-break, font-family, line-height, color` styles the layout and appearance
+*/
+.modal-prompt pre {
+  background: var(--background-color);
+  padding: 15px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+/* Styles the close button */
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+/* Change style on hover */
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+}
+/* Dark mode adjustments for modal content */
+.dark-mode .modal-content {
+  background-color: var(--surface-color);
+}
+/* Dark mode adjustments for code block */
+.dark-mode .modal-prompt pre {
+  background: var(--dark-card-bg);
+}
+/* Styles the close button */
+.modal .close {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* 
+  ANIMATIONS
+*/
+/* Basic fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Fade-in from the bottom animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Fade-in from top animation */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Fade-in from right animation */
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* Fade-in from left animation */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* Slide-in animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Spin animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg) translate(-50%, -50%);
+  }
+  to {
+    transform: rotate(360deg) translate(-50%, -50%);
+  }
+}
+/* Neon pulsing animation */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: var(--neon-primary);
+  }
+  50% {
+    box-shadow: var(--neon-secondary);
+  }
+}
+/* Rotating glow animation */
+@keyframes rotateGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Wave animation */
+@keyframes waveFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+/* 
+  SCROLLBAR STYLES
+*/
+/* Styles the scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+/* Styles scrollbar track */
+::-webkit-scrollbar-track {
+  background: var(--sidebar-bg);
+  border-radius: 10px;
+}
+/* Styles scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  border: 2px solid var(--sidebar-bg);
+}
+/* Styles scrollbar thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-hover);
+}
+
+/* 
+  RESPONSIVE ENHANCEMENTS
+*/
+/*
+    - If the screen width is less than 1200px:
+        -  Makes the main wrapper flow vertically.
+        -  Makes the sidebar static.
+        -  Resizes all content
+*/
+@media (max-width: 1200px) {
+  .main-wrapper {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
+  }
+  .container,
+  .library-container,
+  .main-content {
+    height: auto;
+    min-height: calc(100vh - clamp(3rem, 8vw, 4rem) - 80px);
+  }
+}
+
+/*
+    - if the screen width is below 900px
+        - reduce chat area size
+        - reduce size of generated images
+*/
+@media (max-width: 900px) {
+  .chat {
+    max-height: 250px;
+  }
+  .generated-image,
+  .library-container .generated-image {
+    max-height: 350px;
+  }
+}
+
+/*
+    - If the screen width is less than 768px:
+        - Makes the header stack on top of eachother.
+        - Centers the logo
+        - Resizes navigation buttons
+        - Adjusts main wrapper to be smaller
+        - Adjusts the chat area to be smaller
+        - Fixes mobile form elements
+        - Makes buttons and toggles more touch friendly
+        - Changes modal size
+*/
+@media (max-width: 768px) {
+  .main-header {
+    padding: 10px;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .logo {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  .main-nav {
+    width: 100%;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .main-nav button {
+    padding: 6px 12px;
+    font-size: 0.9em;
+  }
+
+  /* Adjust main wrapper to prevent content hiding under header */
+  .main-wrapper {
+    margin-top: 120px;
+    padding: 10px;
+  }
+
+  /* Make chat more mobile-friendly */
+  .chat {
+    margin-bottom: 140px;
+  }
+
+  .chat-input-group {
+    bottom: 80px;
+    padding: 10px;
+  }
+
+  /* Improve mobile form elements */
+  .input-group textarea,
+  .input-group input,
+  .input-group select {
+    font-size: 16px; /* Prevents zoom on focus in iOS */
+  }
+
+  /* Better touch targets */
+  .buttons button,
+  .toggle-buttons button {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+
+  /* Adjust modal for mobile */
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+    padding: 15px;
+  }
+}
+
+/*
+    - makes buttons align vertically
+    - reduces the width of the image container
+*/
+@media (max-width: 700px) {
+  .buttons {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .image-container {
+    width: 90%;
+    max-width: 300px;
+  }
+}
+
+/*
+    - reduces loader size
+    - reduces font size in caption
+    - reduces width of progress bar
+    - stacks download buttons vertically
+    - increases padding of toggle buttons
+*/
+@media (max-width: 600px) {
+  .loader {
+    width: 50px;
+    height: 50px;
+    border-width: 6px;
+  }
+  .caption {
+    font-size: 0.8em;
+    padding: 10px;
+  }
+  .progress-container {
+    width: 95%;
+  }
+  .download-options {
+    flex-direction: column;
+  }
+  .toggle-buttons button {
+    padding: 12px 20px;
+  }
+}
+
+/*
+    - reduces the wrapper padding
+    - makes buttons full width
+    - reduces font size of input elements
+*/
+@media (max-width: 480px) {
+  .main-wrapper {
+    padding: 5px;
+    margin-top: clamp(4rem, 15vw, 7rem);
+  }
+  .buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  .buttons button {
+    width: 100%;
+  }
+  .input-group textarea,
+  .input-group input,
+  .input-group select {
+    font-size: 16px;
+  }
+  .story-frame {
+    padding: 10px;
+  }
+  .loading-text {
+    font-size: 1.1em;
+  }
+  .loading-message {
+    font-size: 1em;
+    padding: 8px 15px;
+  }
+}
+
+/* 
+  ACCESSIBILITY
+*/
+/*
+  This helps users see which element is focused when tabbing
+*/
+button:focus,
+button:focus-visible,
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: 2px solid var(--primary-hover);
+  outline-offset: 2px;
+}
+
+/*
+  Dark mode adjustments for assistant
+*/
+body.dark-mode {
+  --assistant-bg-color: #333333;
+  --assistant-text-color: #ffffff;
+}
+body.dark-mode .chat-message.assistant {
+  background-color: var(--assistant-bg-color);
+  color: var(--assistant-text-color);
+}
+
+/* 
+  CODE BLOCK & INLINE CODE
+*/
+/*
+    - `border: 1px solid var(--primary-color); border-radius: 6px;` styles border and shape
+    - `padding: 12px; margin: 8px 0; overflow-x: auto; white-space: pre-wrap; word-break: break-word;` styles layout and display
+*/
+.chat-message pre {
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  white-space: pre-wrap; 
+  word-break: break-word; 
+}
+/* Styles the inline code */
+.chat-message .inline-code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+/* Dark mode styling for code blocks */
+.dark-mode .chat-message pre {
+  border: 1px solid var(--primary-color);
+  background: #1e1e1e;
+}
+/* Dark mode styling for inline code */
+.dark-mode .chat-message code.inline-code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Prism.js override protection */
+/*
+    - `padding: 1em; margin: 0.5em 0; overflow: auto; border-radius: 6px; border: 1px solid var(--primary-color);` styles base layout
+*/
+pre[class*="language-"] {
+  padding: 1em;
+  margin: 0.5em 0;
+  overflow: auto;
+  border-radius: 6px;
+  border: 1px solid var(--primary-color);
+}
+/*
+    - `color: inherit; background: none; text-shadow: none;` sets base styling
+    - `font-family: 'Consolas', 'Monaco', monospace;` sets the font for code elements
+    - `direction: ltr; text-align: left; white-space: pre; word-spacing: normal; word-break: normal; line-height: 1.5; font-size: 0.95em;` sets styling for text and layouts
+*/
+code[class*="language-"],
+pre[class*="language-"] {
+  color: inherit;
+  background: none;
+  text-shadow: none;
+  font-family: 'Consolas', 'Monaco', monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.5;
+  font-size: 0.95em;
+}
+/* Sets the color for specific languages */
+.language-javascript { color: #dcdcaa; }
+.language-python { color: #4ec9b0; }
+.language-html { color: #569cd6; }
+.language-css { color: #ce9178; }
+
+/* Clear button styles */
+/*
+    - `padding: 8px 16px;  border: none; border-radius: 6px; background-color: var(--secondary-color); color: white; cursor: pointer;` styles the basic look
+    - `display: flex, align-items: center, gap: 8px` centers elements
+    - `margin-left: 20px; transition: background-color, transform;` sets spacing and transitions
+*/
+.clear-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--secondary-color);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 20px;
+  transition: background-color var(--transition-speed), transform 0.2s;
+  /* Add a more pronounced hover effect */
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Hover animation for the clear button */
+.clear-button:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+}
+
+/* 
+  LOADING MESSAGE ANIMATIONS 
+*/
+/*
+    - `font-size, color, margin, text-align` sets the look
+    - `animation: pulse 2s infinite;` creates the pulse animation
+    - `text-shadow` adds shadow
+    - `font-weight` styles font weight
+*/
+.loading-text {
+  font-size: 1.4em;
+  color: var(--primary-color);
+  margin: 15px 0;
+  text-align: center;
+  animation: pulse 2s infinite;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+}
+/*
+    - `font-size: 1.2em; color: var (--text-color); margin-top: 15px;` sets font and color
+    - `text-align: center; animation: fadeInOut 1.5s ease-in-out infinite;` styles text and animation
+    - `text-shadow, background, padding, border-radius, font-weight` adds a cool look
+*/
+.loading-message {
+  font-size: 1.2em;
+  color: var (--text-color);
+  margin-top: 15px;
+  text-align: center;
+  animation: fadeInOut 1.5s ease-in-out infinite;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+/* Dark mode adjustments for text */
+body.dark-mode .loading-text {
+  color: #9ed16f;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+/* Dark mode adjustments for message */
+body.dark-mode .loading-message {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+/* Pulse animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+/* Fade-in out animation */
+@keyframes fadeInOut {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* 
+  STORY FRAME
+*/
+/*
+    - `background, padding, border-radius, margin-bottom, box-shadow, animation` styles base look
+*/
+.story-frame {
+  background: var(--surface-color);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-out;
+}
+/* Styles the heading */
+.story-frame h3 {
+  color: var(--primary-color);
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+}
+/* Styles paragraph text */
+.story-frame p {
+  margin: 5px 0;
+  font-size: 0.95em;
+}
+/* Styles the horizontal rule */
+.story-frame hr {
+  border: none;
+  border-top: 1px solid var(--sidebar-border);
+  margin: 10px 0 5px 0;
+}
+
+/* 
+  LEGAL SECTION
+*/
+/*
+    - `padding, margin` adds spacing
+*/
+.legal-section {
+  padding: 2rem;
+  margin: 2rem 0;
+}
+/*
+    - `display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;` sets up layout
+*/
+.legal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
+}
+/*
+    - `background, border-radius, padding, box-shadow` styles basic legal card
+*/
+.legal-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+/*
+    - `margin-top` adds spacing
+*/
+.legal-content {
+  margin-top: 1rem;
+}
+/*
+    - `display: inline-block; margin-top: 1rem; color: var(--primary-color); text-decoration: none;` styles the link
+*/
+.legal-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+/*
+    - `background, padding, border-radius, margin` styles the content disclaimers
+*/
+.content-disclaimer {
+  background: var(--warning-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+/* 
+  CONTACT INFO
+*/
+/*
+  - `padding, margin-bottom` styles spacing
+*/
+.contact-info {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+/*
+    - `display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;` sets up the contact card layout
+    - `margin-top: 1rem;` sets top margin
+*/
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
+}
+/*
+    - `text-align: center; padding: 1.5rem;` centers content and sets padding
+    - `background, border-radius, box-shadow` styles appearance
+*/
+.contact-card {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+/* Sets style for the contact links */
+.contact-card a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+/* Sets styling for the contact icons */
+.contact-card i {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+/* 
+  ENSURE CONTENT DOESN'T OVERFLOW
+*/
+/*
+    - Ensures content doesn't overflow
+*/
+.main-content,
+.sidebar,
+.storyboard-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Improved scrolling on mobile */
+.generated-image,
+.library-container .generated-image {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for small screen image display */
+/*
+  Ensures image is contained within its container on small screens
+*/
+.image-container img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Ensure modal works on mobile */
+/*
+    - fixes the modal for mobile screens
+*/
+@media screen and (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    margin: 0 auto;
+  }
+  .close {
+    top: 15px;
+    right: 15px;
+    font-size: 28px;
+  }
+}
+
+/* HOME PAGE SPECIFIC STYLES */
+/*
+    - `margin-bottom: 40px; animation: fadeInUp 0.5s ease-out;` styles spacing and animation
+*/
+.updates-section {
+  margin-bottom: 40px;
+  animation: fadeInUp 0.5s ease-out;
+}
+/*
+    - `background: var(--surface-color); border-radius: 10px; padding: 20px; margin: 15px 0; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);` styles the look
+    - `transition: transform, box-shadow;` styles the transitions
+*/
+.update-card {
+  background: var(--surface-color);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 15px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+/* Hover effect for update cards */
+.update-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+/*
+    - `display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 20px;` styles layout
+    - `margin: 20px 0; width: 100%;` sets spacing and size
+*/
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: 20px;
+  margin: 20px 0;
+  width: 100%;
+}
+/*
+    - `background, padding, border-radius, box-shadow, transition` styles the card
+*/
+.feature-card {
+  background: var(--surface-color);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition-speed);
+}
+/* Hover animation for feature cards */
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+/* Styles the model selector */
+/*
+    - `padding: 8px; border: 1px solid #ccc; border-radius: 4px;` styles border
+    - `margin-right: 10px; background-color: white; color: #333;` styles appearance
+*/
+#modelSelect {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  background-color: white;
+  color: #333;
+}
+/* Dark mode styles for model selector */
+.dark-mode #modelSelect {
+  background-color: #2c2c2c;
+  color: #fff;
+  border-color: #444;
+}
+
+
+/* HERO SECTION */
+/*
+    - `padding: 4rem 2rem;` sets spacing
+    - `text-align: center;` centers text
+    - `background: url('../../images/hero-bg.gif') no-repeat center center; background-size: cover;` sets the background
+    - `position: relative; color: white; border-radius: var(--border-radius); margin-bottom: 2rem; box-shadow: var(--box-shadow);` sets the basic look
+    - `aspect-ratio: 16/9; overflow: hidden;` forces the hero image to be 16:9
+*/
+.hero-section {
+  padding: 4rem 2rem;
+  text-align: center;
+  background: url('../../images/hero-bg.gif') no-repeat center center; /* Updated path */
+  background-size: cover;
+  position: relative;
+  color: white;
+  border-radius: var(--border-radius);
+  margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+/* Styles the background overlay */
+.hero-section:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(112, 9, 9, 0.5);
+  border-radius: 15px;
+}
+/* Positions the hero content */
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+/* Styles the hero section heading */
+.hero-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+/* Styles the hero section subtitle */
+.hero-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+/* Styles the container for hero buttons */
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+/*
+    - `padding: 1rem 2rem; border-radius: var(--border-radius); font-weight: bold; cursor: pointer; transition: all var(--transition-speed) ease;` styles the basic look of buttons
+*/
+.primary-btn,
+.secondary-btn {
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+/* Primary button styles */
+.primary-btn {
+  background: var(--accent-color);
+  color: var(--text-light);
+  border: none;
+}
+/* Primary button hover effect */
+.primary-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+/* Secondary button styles */
+.secondary-btn {
+  background: transparent;
+  color: var(--text-light);
+  border: 2px solid var(--text-light);
+}
+/* Secondary button hover effect */
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* QUICK TOOLS SECTION */
+/*
+    - `margin: 2rem 0;` sets spacing
+*/
+.quick-tools {
+  margin: 2rem 0;
+}
+/*
+    - `display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));` sets up the layout
+    - `gap: 1.5rem; width: 100%;` sets spacing
+*/
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+/*
+    - `background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);` sets base styles
+    - `box-shadow: var(--box-shadow); cursor: pointer; transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;` styles shadow and animations
+*/
+.tool-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  cursor: pointer;
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+/* Hover animation for tool card */
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--hover-shadow);
+}
+/* Styles the icons in the tool card */
+.tool-card i {
+  font-size: 2rem;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+/* Styles headings in the tool card */
+.tool-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+/* Styles paragraph text in tool cards */
+.tool-card p {
+  color: var(--text-secondary);
+}
+
+/* SECTION HEADERS */
+/*
+    - `display: flex; align-items: center; justify-content: space-between;` sets layout
+    - `margin-bottom: 1.5rem;` sets spacing
+*/
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+/* Styles the version badge */
+.version-badge {
+  background: var(--accent-color);
+  color: var(--text-light);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+}
+
+/* FEATURE CARDS */
+/*
+    - `background, padding, border-radius, box-shadow, transition` sets basic look of feature cards
+*/
+.feature-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: transform var(--transition-speed) ease;
+}
+/* Hover effect for feature cards */
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+/* Styles the work in progress badge */
+.wip-badge {
+  background: var(--warning-color);
+  color: var(--text-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
+
+/* DARK MODE ADJUSTMENTS */
+/* Dark mode styles for hero section */
+.dark-mode .hero-section {
+  background: var(--dark-gradient);
+}
+/* Dark mode style for cards */
+.dark-mode .tool-card,
+.dark-mode .feature-card {
+  background: var(--dark-card-bg);
+}
+/* Dark mode styles for primary buttons */
+.dark-mode .primary-btn {
+  background: var(--dark-accent);
+}
+/* Dark mode styles for hover effect for primary buttons */
+.dark-mode .primary-btn:hover {
+  background: var(--dark-accent-hover);
+}
+
+/* AI THINKING PROCESS STYLES */
+/*
+    - `padding, margin, background, border-radius, box-shadow` styles base look
+    - `background-image: none;` removes any background images
+*/
+.thinking-process {
+  padding: 15px;
+  margin: 10px 0;
+  background: var(--surface-color);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-image: none;
+}
+/*
+    - `margin: 8px 0; opacity: 0; transform: translateX(-20px); transition: all 0.3s ease-out;` sets spacing and transitions
+    - `background, border-radius, animation` sets background, border and animation
+*/
+.thinking-step {
+  margin: 8px 0;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.3s ease-out;
+  background: var(--card-bg);
+  border-radius: 8px;
+  animation: fadeInLeft 0.5s ease-out;
+}
+/*
+    - `display: flex; align-items: center; gap: 10px;` sets layout and centers items
+    - `padding: 8px; background: var(--card-bg); border-radius: 6px;` sets style
+*/
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--card-bg);
+  border-radius: 6px;
+}
+/* Styles the step number */
+.step-number {
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  color: var(--button-text);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+/* Styles the step label */
+.step-label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+/*
+    - `margin-top: 5px; padding: 8px; background: rgba(107, 142, 35, 0.1); border-radius: 4px;` sets look
+    - `font-size: 0.9em; display: none;` sets display and font size
+*/
+.step-content {
+  margin-top: 5px;
+  padding: 8px;
+  background: rgba(107, 142, 35, 0.1);
+  border-radius: 4px;
+  font-size: 0.9em;
+  display: none;
+}
+/* Makes the step visible and animates its content */
+.thinking-step.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+.thinking-step.active .step-content {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+/* Styles complete steps */
+.thinking-step.complete .step-header {
+  background: var(--primary-color);
+}
+
+/* Separate keyframe animation if needed */
+@keyframes stepHeaderBounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+/* NEWS SIDEBAR */
+/*
+    - `position: fixed; right: -400px; top: clamp(3rem, 8vw, 4rem); width: 400px;` sets position and size
+    - `height: calc(100vh - clamp(3rem, 8vw, 4rem));` sets the height
+    - `background, border-left, box-shadow, transition` sets look and transitions
+    - `z-index, display, flex-direction, background-image` sets the rendering order
+*/
+.news-sidebar {
+  position: fixed;
+  right: -400px;
+  top: clamp(3rem, 8vw, 4rem);
+  width: 400px;
+  height: calc(100vh - clamp(3rem, 8vw, 4rem));
+  background: var(--surface-color);
+  border-left: 1px solid var(--sidebar-border);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: right var(--transition-speed) ease;
+  z-index: 998;
+  display: flex;
+  flex-direction: column;
+  background-image: none;
+}
+/* Sets the visibility for an active sidebar */
+.news-sidebar.active {
+  right: 0;
+}
+/*
+    - `padding: 15px; border-bottom: 1px solid var(--sidebar-border);` sets layout and style
+    - `display: flex; justify-content: space-between; align-items: center;` sets the flexbox to align elements
+*/
+.news-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--sidebar-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+/*
+    - `margin: 0; color: var(--primary-color);` removes the margin and sets text color
+    - `display: flex, align-items: center, gap: 8px;` sets up layout
+*/
+.news-header h3 {
+  margin: 0;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Styles for the search input */
+/*
+    - `padding: 15px; border-bottom: 1px solid var(--sidebar-border);` sets spacing and border
+    - `display: flex; gap: 10px;` sets layout
+*/
+.news-search {
+  padding: 15px;
+  border-bottom: 1px solid var(--sidebar-border);
+  display: flex;
+  gap: 10px;
+}
+/* Styles input element */
+.news-search input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 4px;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+/*
+    - `flex: 1; overflow-y: auto; padding: 15px;` makes it grow and scrollable
+*/
+.news-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+/*
+    - `margin-bottom: 20px; padding: 15px;` sets basic layout
+    - `background, border-radius, animation` sets background, border and animation
+*/
+.news-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--background-color);
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-out;
+}
+/* Styles news item heading */
+.news-item h4 {
+  margin: 0 0 10px 0;
+  color: var(--primary-color);
+}
+/* Styles news item links */
+.news-item a {
+  color: var (--primary-color);
+  text-decoration: none;
+}
+/* Styles the paragraph text in news item */
+.news-item p {
+  margin: 10px 0;
+  font-size: 0.9em;
+  color: var (--text-color);
+}
+/* Styles the images in news items */
+.news-item img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+/* Styles the load more button */
+.load-more-news {
+  padding: 15px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+/* Hover effect for load more button */
+.load-more-news:hover {
+  background: var(--primary-hover);
+}
+/* Styles the news sidebar toggle button */
+/*
+    - `position: fixed; right: 20px; bottom: 20px; width: 50px; height: 50px;` sets position and size
+    - `border-radius: 50%; background: var(--primary-color); color: white;` styles button
+    - `border: none; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); z-index: 999;` styles button
+    - `display: flex; align-items: center; justify-content: center;` centers content
+    - `transition: transform var(--transition-speed), background-color var(--transition-speed);` adds transition
+*/
+.toggle-news-sidebar {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-speed), background-color var(--transition-speed);
+}
+/* Hover animation for toggle button */
+.toggle-news-sidebar:hover {
+  transform: scale(1.1);
+  background: var(--primary-hover);
+}
+/*
+    - `display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; color: var(--primary-color);` styles the look
+*/
+.news-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  color: var(--primary-color);
+}
+
+/* DARK MODE NEWS */
+/* Dark mode adjustments for news sidebar */
+.dark-mode .news-sidebar {
+  background: var(--surface-color);
+}
+/* Dark mode adjustments for news items */
+.dark-mode .news-item {
+  background: var(--card-bg);
+}
+
+/* Responsive news sidebar */
+@media (max-width: 768px) {
+  .news-sidebar {
+    width: 100%;
+    right: -100%;
+  }
+  .toggle-news-sidebar {
+    width: 40px;
+    height: 40px;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
+/* 
+  ENHANCED LOADING STYLES
+*/
+/*
+  - `display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px;` styles container
+    - `background, border-radius, box-shadow, max-width, width` sets look
+*/
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  background: var(--surface-color);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+}
+/*
+    - `position: relative; width: 100px; height: 100px;` sets position and size
+    - `display: flex; justify-content: center; align-items: center;` centers its content
+    - `animation: loaderRotate 2s linear infinite;` sets animation
+    - `background-image: none;` removes any background images
+*/
+.hexagon-loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: loaderRotate 2s linear infinite;
+  background-image: none;
+}
+/*
+    - `width: 60px; height: 70px; background: var(--primary-color);` sets size and color
+    - `clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);` creates shape
+    - `animation: pulse 1.5s ease-in-out infinite;` sets the animation
+*/
+.hexagon  {
+  width: 60px;
+  height: 70px;
+  background: var(--primary-color);
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+/* Styles the rotation of the loader */
+@keyframes loaderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Styles the pulse animation */
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+/* Dark mode for loading container */
+.dark-mode .loading-container {
+  background: var(--surface-color);
+}
+.dark-mode .loading-text {
+  color: #9ed16f;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+.dark-mode .loading-message {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 
+  BUTTON STYLES
+*/
+/*
+    - `font-family, font-size, padding, border, border-radius, cursor, transition` styles base buttons
+*/
+.button-primary,
+.button-secondary,
+.action-btn,
+.format-btn {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1em;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), transform 0.2s;
+}
+/* Style for primary buttons */
+.button-primary {
+  background-color: var(--primary-color);
+  color: var(--button-text);
+}
+/* Hover effect for primary buttons */
+.button-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+/* Style for secondary buttons */
+.button-secondary {
+  background-color: var(--secondary-color);
+  color: var(--button-text);
+}
+/* Hover effect for secondary buttons */
+.button-secondary:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+}
+/* Style for action and format buttons */
+.action-btn,
+.format-btn {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid var(--primary-color);
+}
+/* Hover effects for action and format buttons */
+.action-btn:hover,
+.format-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* DARK MODE Adjustments */
+/* Dark mode adjustments for modal content */
+.dark-mode .modal-content {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+.dark-mode .button-primary,
+.dark-mode .button-secondary {
+  background-color: var(--primary-hover);
+  color: var (--background-color);
+}
+.dark-mode .button-primary:hover,
+.dark-mode .button-secondary:hover {
+  background-color: var(--primary-color);
+}
+
+/* 
+  UPDATED THINKING PROCESS STYLES
+*/
+/*
+    - `padding: 8px 12px; margin: 8px 45px;` sets padding and margins
+    - `width: fit-content; max-width: 80%;` controls width
+    - `background: var(--background-color);` styles the background
+    - `border: 1px solid rgba(107, 142, 35, 0.15); border-radius: 15px;` sets the border and border radius
+    - `display: flex; align-items: center; gap: 8px; align-self: flex-start;` styles the layout
+    - `position: relative; opacity: 1; transition: all 0.3s ease;` sets position and transitions
+*/
+.thinking-container {
+  padding: 8px 12px;
+  margin: 8px 45px;
+  width: fit-content;
+  max-width: 80%;
+  background: var(--background-color);
+  border-radius: 15px;
+  border: 1px solid rgba(107, 142, 35, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  position: relative;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+/* Styles container for the icons */
+.thinking-icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+/* Styles the dots of the thinking process */
+.thinking-dot {
+  width: 4px;
+  height: 4px;
+  background: var (--primary-color);
+  border-radius: 50%;
+  animation: thinkingPulse 1s infinite;
+}
+/* Animates the second dot */
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+/* Animates the third dot */
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+/* Styles the text of the thinking process */
+.thinking-text {
+  color: var(--text-color);
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Styles the status text */
+.thinking-status {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+/* Creates the pulse animation */
+@keyframes thinkingPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+/* Dark mode adjustments for thinking container */
+.dark-mode .thinking-container {
+  background: rgba(30, 30, 30, 0.95);
+}
+
+/* Add reduced motion preferences */
+/*
+    - Removes animations for people that prefer reduced motion.
+*/
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Performance Optimizations */
+/*
+    - Styles to enhance performance
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+/*
+    - Styles for perfomance
+*/
+.main-wrapper,
+.container,
+.thinking-container,
+.modal {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform; /* Add will-change property */
+}
+/*
+    - Styles for perfomance
+*/
+.chat-message,
+.image-container,
+.thinking-step {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 100px;
+}
+
+/* Modern Responsive Design with Container Queries */
+/*
+    - Container query that uses responsive styling for the main content area
+*/
+@container main-content (max-width: 768px) {
+  /* Container-specific responsive styles can go here if desired */
+}
+
+/* Add print styles */
+/*
+    - Styles for printing
+*/
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: none !important;
+    color: black !important;
+  }
+  .container {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/* Utility Classes */
+/*
+  - Utility classes for accessibility
+*/
+.visually-hidden,
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Storyboard Header Fixes */
+/*
+  - fixes storyboard layout for header
+*/
+.storyboard .header.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+  gap: 1rem;
+}
+/* Ensures correct layout for buttons in header */
+.storyboard .header.buttons button {
+  min-width: 180px;
+  white-space: nowrap;
+  height: 45px;
+}
+/* Ensures the header is centered in the storyboard */
+.storyboard .header.buttons h1 {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+/* Makes the storyboard header stack properly on mobile */
+@media (max-width: 768px) {
+  .storyboard .header.buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .storyboard .header.buttons button {
+    width: 100%;
+    margin: 0;
+  }
+  .storyboard .header.buttons h1 {
+    order: -1;
+  }
+}
+
+/* Image Container Wrapper */
+/*
+  - adds a wrapper for images
+*/
+.image-container-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+/* Styles the button for viewing the image prompt */
+.view-prompt-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    color: #333;
+    font-size: 0.5em;
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+/* Show button only when parent has has-image class */
+.image-container.has-image .view-prompt-btn {
+    display: flex !important;
+}
+
+/* Hover effects for the view prompt button */
+.view-prompt-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.15);
+}
+
+/* Dark mode adjustments for prompt button */
+.dark-mode .view-prompt-btn {
+    background: rgba(30, 30, 30, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+}
+/* Styles the modal prompts */
+.modal-prompt {
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+}
+/* Styles the heading in the prompt */
+.modal-prompt h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+/* Styles code blocks within the modal prompt */
+.modal-prompt pre {
+    background: var(--background-color);
+    padding: 15px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: monospace;
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+}
+/* Dark mode adjustments for the prompt button */
+.dark-mode .view-prompt-btn {
+    background: rgba(30, 30, 30, 0.9);
+    color: white;
+}
+/* Dark mode adjustments for the pre element in the modal prompt */
+.dark-mode .modal-prompt pre {
+    background: var(--dark-card-bg);
+    color: var(--text-color);
+}
+
+/* -------------- CREATIVE UTILITY CLASSES -------------- */
+/* Styles the text for the neon effect */
+.neon-text {
+  text-shadow: var(--neon-primary);
+  animation: neonPulse 2s infinite;
+}
+/* Styles the wave effect */
+.wave-float {
+  animation: waveFloat 3s ease-in-out infinite;
+}
+/* Styles the rotate effect */
+.rotate-glow {
+  animation: rotateGlow 20s linear infinite;
+}
+
+/* Storyboard Generated Images */
+/*
+  - Styles the storyboard image layout
+*/
+#storyboardFrames {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-items: center;
+  align-items: start;
+  margin-bottom: 50px;
+}
+
+/* Storyboard Frame Container */
+/*
+  - Styles the storyboard frame container
+*/
+.storyboard-frame {
+  width: 300px;
+  min-height: 500px;
+  position: relative;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-md);
+}
+
+/* Styles the image container within storyboard frames */
+.storyboard-frame .image-container {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Styles the images within the storyboard */
+.storyboard-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Styles the info of the storyboard frames */
+.storyboard-frame .scene-info {
+  padding: 15px;
+  background: var(--surface-color);
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+/* Styles the action buttons in the storyboard */
+.storyboard-frame .frame-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 5px;
+  border-radius: 5px;
+  z-index: 10;
+}
+
+/* Styles individual action buttons for each frame */
+.storyboard-frame .frame-actions button {
+  padding: 5px 10px;
+  background: var (--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+/* Styles the frame numbers on each storyboard frame */
+.storyboard-frame .frame-number {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  z-index: 10;
+  font-weight: bold;
+}
+
+/* Responsive adjustments for storyboard */
+@media (max-width: 768px) {
+  #storyboardFrames {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    padding: 10px;
+    gap: 15px;
+  }
+
+  .storyboard-frame {
+    width: 100%;
+    max-width: 300px;
+    min-height: 450px;
+  }
+
+  .storyboard-frame .image-container {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  #storyboardFrames {
+    grid-template-columns: 1fr;
+  }
+
+  .storyboard-frame {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* Hover effects for storyboard frames */
+.storyboard-frame:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode adjustments for storyboard */
+.dark-mode .storyboard-frame {
+  border-color: var(--primary-color);
+  background-color: var(--surface-color);
+}
+.dark-mode .storyboard-frame .frame-actions {
+  background-color: rgba(30, 30, 30, 0.9);
+}
+.dark-mode .storyboard-frame .scene-info {
+  background: var(--surface-color);
+  color: var (--text-color);
+}
+/* Styles the alerts */
+.styled-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+/* Styles the content of the alert */
+.styled-alert .alert-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* Styles the alert icon */
+.styled-alert i {
+  font-size: 1.2em;
+  color: #64B5F6;
+}
+/* Styles alert text */
+.styled-alert p {
+  margin: 0;
+  font-size: 0.95em;
+}
+/* Styles for alert fade-out */
+.styled-alert.fade-out {
+  animation: slideOut 0.5s ease-in forwards;
+}
+/* Slide-in animation for the alert */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+/* Slide-out animation for alert */
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Dark mode support for alerts */
+.dark-mode .styled-alert {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Styles for the stop generation button */
+.stop-generation-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
+  z-index: 1000;
+}
+/* Hover effect for the stop generation button */
+.stop-generation-btn:hover {
+  background-color: #ff0000;
+}
+
+/* Mobile Responsive Design Enhancements */
+@media screen and (max-width: 480px) {
+  /* Header adjustments */
+  .main-header {
+    height: auto;
+    padding: 10px;
+    flex-direction: column;
+  }
+
+  .logo {
+    font-size: clamp(1.2rem, 4vw, 1.4rem);
+    margin-bottom: 8px;
+  }
+
+  .main-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .main-nav button {
+    padding: 6px 10px;
+    font-size: 0.85em;
+    min-width: auto;
+  }
+
+  /* Hero section mobile optimization */
+  .hero-section {
+    padding: 2rem 1rem;
+    min-height: 60vh;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .hero-buttons button {
+    width: 100%;
+  }
+
+  /* Tools and features grid */
+  .tools-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 10px;
+  }
+
+  .tool-card,
+  .feature-card {
+    padding: 15px;
+  }
+
+  /* Form and input adjustments */
+  .input-group textarea,
+  .input-group input,
+  .input-group select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    padding: 10px;
+  }
+
+  /* Chat interface optimization */
+  .chat-input-group {
+    padding: 10px;
+  }
+
+  .chat-message {
+    max-width: 90%;
+    padding: 10px;
+    font-size: 0.9em;
+  }
+
+  /* Modal improvements */
+  .modal-content {
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
+  }
+
+  /* Sidebar adjustments */
+  .sidebar,
+  .news-sidebar {
+    width: 100%;
+    left: -100%;
+  }
+
+  /* Generated images grid */
+  .generated-image {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .image-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Touch-friendly buttons */
+  .buttons button,
+  .toggle-buttons button {
+    min-height: 44px; /* iOS minimum touch target */
+    padding: 12px 20px;
+  }
+
+  /* Loading and overlay improvements */
+  .loading-container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  /* Bottom navigation */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--surface-color);
+    padding: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-around;
+    z-index: 1000;
+  }
+
+  /* Swipe gestures support */
+  .main-wrapper {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  /* Mobile-specific animations */
+  @keyframes mobileSlideIn {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Mobile dark mode adjustments */
+  .dark-mode .bottom-nav {
+    background: var(--dark-card-bg);
+    border-top: 1px solid var(--sidebar-border);
+  }
+}
+
+/* Mobile landscape orientation */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  .hero-section {
+    min-height: 100vh;
+  }
+
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* Modern mobile features */
+@supports (padding: max(0px)) {
+  .main-header,
+  .bottom-nav {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Progressive enhancement for modern mobile browsers */
+@supports (display: grid) and (gap: 1rem) {
+  .tools-grid,
+  .features-grid {
+    gap: clamp(10px, 3vw, 20px);
+  }
+}
+
+/* Mobile Layout Fixes */
+@media screen and (max-width: 768px) {
+  /* Header Fixes */
+  .main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    padding: 10px;
+    z-index: 1000;
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--sidebar-border);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    /* Add transition for smoother resizing */
+    transition: height 0.3s ease;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    margin: 0;
+    padding: 5px 0;
+  }
+
+  .main-nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 5px 0;
+    gap: 8px;
+    /* Add transition for smoother resizing */
+    transition: height 0.3s ease;
+  }
+
+  .main-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .main-nav button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Sidebar Adjustments */
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 90px; /* Adjusted for header height */
+    width: 80%;
+    height: calc(100vh - 90px);
+    z-index: 999;
+    transition: left 0.3s ease;
+    background: var(--surface-color);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    /* Add transition for smoother appearance */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  /* Add hamburger menu for sidebar */
+  .sidebar-toggle {
+    display: block;
+    position: fixed;
+    left: 10px;
+    top: 15px;
+    z-index: 1001;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  /* Main Content Adjustments */
+  .main-wrapper {
+    margin-top: 90px; /* Account for fixed header */
+    padding: 10px;
+    min-height: calc(100vh - 90px);
+    /* Add transition for smoother appearance */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .container.active {
+    padding: 10px;
+    margin-bottom: 70px; /* Space for footer */
+  }
+
+  /* Chat Area Fixes */
+  .chat {
+    height: calc(100vh - 200px);
+    margin-bottom: 130px; /* Space for input and footer */
+    /* Add transition for smoother appearance */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .chat-input-group {
+    position: fixed;
+    bottom: 70px; /* Above footer */
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: var(--surface-color);
+    border-top: 1px solid var(--sidebar-border);
+    z-index: 998;
+    /* Add transition for smoother appearance */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Footer Improvements */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    background: var(--surface-color);
+    z-index: 997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    /* Add transition for smoother appearance */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+}
+
+/* Additional Mobile Optimizations */
+@media screen and (max-width: 480px) {
+  .main-header {
+    padding: 8px;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .main-nav button {
+    padding: 6px 10px;
+    font-size: 0.85em;
+  }
+
+  .sidebar {
+    width: 85%;
+  }
+
+  .chat-message {
+    max-width: 85%;
+    font-size: 0.9em;
+  }
+
+  .chat-input-group {
+    padding: 8px;
+  }
+
+  .chat-input-group input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Safe Area Insets for Modern Devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .main-header {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-left: max(10px, env(safe-area-inset-left));
+  }
+
+  .chat-input-group {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  footer {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .sidebar {
+    height: calc(100vh - 90px - env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Landscape Mode Optimizations */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  .main-header {
+    flex-direction: row;
+    padding: 5px 15px;
+    min-height: 50px;
+  }
+
+  .logo {
+    margin-right: 15px;
+  }
+
+  .main-nav {
+    justify-content: flex-end;
+  }
+
+  .sidebar {
+    top: 50px;
+    height: calc(100vh - 50px);
+  }
+
+  .main-wrapper {
+    margin-top: 50px;
+  }
+
+  .chat {
+    height: calc(100vh - 160px);
+  }
+}
+
+/* Add overlay when sidebar is active */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  /* Add backdrop filter for a frosted glass effect */
+  backdrop-filter: blur(5px);
+}
+/* Styles for active sidebar overlay */
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Mobile Layout Fixes */
+@media screen and (max-width: 480px) {
+  /* Header fixes */
+  .main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    padding: 8px;
+    z-index: 1000;
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--sidebar-border);
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .logo {
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+  }
+
+  .main-nav {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding-bottom: 4px;
+  }
+
+  .main-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+
+  /* Content area fixes */
+  .main-wrapper {
+    margin-top: 110px; /* Adjusted for header height */
+    padding-bottom: 80px; /* Space for footer */
+    min-height: calc(100vh - 110px);
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .container.active {
+    margin-top: 0;
+    padding: 10px;
+    min-height: calc(100vh - 190px); /* Account for header and footer */
+  }
+
+  /* Footer fixes */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    padding: 10px;
+    background: var(--surface-color);
+    z-index: 999;
+    font-size: 0.8em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Fix modal positioning */
+  .modal-content {
+    margin: 60px auto;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  /* Fix news sidebar */
+  .news-sidebar {
+    top: 110px;
+    height: calc(100vh - 170px);
+  }
+
+  /* Fix overlapping elements */
+  .hero-section {
+    margin-top: 0;
+  }
+
+  .chat-input-group {
+    position: fixed;
+    bottom: 60px;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: var(--surface-color);
+    border-top: 1px solid var(--sidebar-border);
+    z-index: 998;
+  }
+
+  .chat {
+    margin-bottom: 120px; /* Space for input group and footer */
+    padding-bottom: 20px;
+  }
+
+  /* Fix button overlaps */
+  .stop-generation-btn {
+    top: auto;
+    bottom: 70px;
+    right: 10px;
+  }
+
+  .toggle-news-sidebar {
+    bottom: 70px;
+  }
+
+  /* Safe area adjustments for notched phones */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    footer {
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+
+    .chat-input-group {
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+
+    .main-wrapper {
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Landscape mode adjustments */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  .main-header {
+    flex-direction: row;
+    height: 50px;
+    min-height: 50px;
+    padding: 0 10px;
+  }
+
+  .logo {
+    margin-bottom: 0;
+  }
+
+  .main-wrapper {
+    margin-top: 50px;
+  }
+
+  .container.active {
+    margin-top: 0;
+  }
+
+  footer {
+    position: relative;
+    height: 50px;
+  }
+
+  .chat-input-group {
+    bottom: 0;
+  }
+}
+
+/* Memory Controls */
+/* Styles the memory control section */
+.memory-controls {
+    padding: 15px;
+    margin: 0 0 20px 0;
+    border-bottom: 1px solid var(--sidebar-border);
+    display: flex;
+    justify-content: flex-end;
+}
+/* Styles the clear memories button */
+.clear-memories-btn {
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+}
+/* Hover effects for the clear memories button */
+.clear-memories-btn:hover {
+    background: #ff0000;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(255, 0, 0, 0.2);
+}
+/* Styles the memory section */
+.memory-section {
+    background: rgba(107, 142, 35, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+/* Styles memory section headings */
+.memory-section h4 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+/* Styles the memory section paragraph */
+.memory-section p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+/* Dark mode adjustments */
+/* Dark mode adjustments for the clear memories button */
+.dark-mode .clear-memories-btn {
+    background: #662222;
+}
+/* Dark mode adjustments for clear memories button on hover */
+.dark-mode .clear-memories-btn:hover {
+    background: #881111;
+}
+/* Dark mode adjustments for memory sections */
+.dark-mode .memory-section {
+    background: rgba(107, 142, 35, 0.1);
+}
+
+/* Enhanced Brain Visualization */
+/* Styles the brain visualization area */
+.brain-visualization {
+    position: relative;
+    min-height: 300px;
+    background: linear-gradient(135deg, rgba(107, 142, 35, 0.05), rgba(107, 142, 35, 0.02));
+    border-radius: 15px;
+    overflow: hidden;
+}
+/* Styles the brain container */
+.brain-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+}
+/* Styles the brain SVG element */
+.brain-svg {
+    width: 200px;
+    height: 200px;
+    transform-style: preserve-3d;
+    animation: rotateBrain 20s linear infinite;
+}
+/* Styles for the neural pathways in the brain animation */
+.brain-path {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 2;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawBrain 3s ease forwards, glowPulse 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px var(--primary-color));
+}
+/* Styles the particle container */
+.particles-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+/* Styles the individual particles */
+.particle {
+    position: absolute;
+    background: var(--primary-color);
+    border-radius: 50%;
+    filter: blur(1px);
+    opacity: 0.6;
+    mix-blend-mode: screen;
+}
+/* Styles the neural connection lines */
+.neural-connection {
+    position: absolute;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    height: 1px;
+    width: 100px;
+    opacity: 0;
+    animation: neuralFlash 3s linear infinite;
+}
+/* Styles the brain rotation animation */
+@keyframes rotateBrain {
+    0% { transform: rotate3d(1, 1, 1, 0deg); }
+    100% { transform: rotate3d(1, 1, 1, 360deg); }
+}
+/* Styles the brain draw animation */
+@keyframes drawBrain {
+    to { stroke-dashoffset: 0; }
+}
+/* Styles the brain glow animation */
+@keyframes glowPulse {
+    0%, 100% { filter: drop-shadow(0 0 5px var(--primary-color)); }
+    50% { filter: drop-shadow(0 0 15px var(--primary-color)); }
+}
+/* Styles the flash animation for the neural connections */
+@keyframes neuralFlash {
+    0% { transform: translateX(-100%) scaleX(1); opacity: 0; }
+    50% { transform: translateX(0%) scaleX(1.5); opacity: 0.5; }
+    100% { transform: translateX(100%) scaleX(1); opacity: 0; }
+}
+
+/* Dark mode adjustments */
+/* Dark mode styles for brain visualization */
+.dark-mode .brain-visualization {
+    background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(107, 142, 35, 0.05));
+}
+/* Dark mode styles for brain neural path */
+.dark-mode .brain-path {
+    stroke: #9ed16f;
+    filter: drop-shadow(0 0 8px #9ed16f);
+}
+
+/* Auth Styles */
+/* Styles the auth container */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+    padding: 20px;
+}
+/* Styles the auth box */
+.auth-box {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+/* Styles heading within the auth box */
+.auth-box h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+}
+/* Styles input groups within auth box */
+.auth-box .input-group {
+    margin-bottom: 1rem;
+}
+/* Styles input elements */
+.auth-box input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--input-bg);
+    color: var(--text-color);
+}
+/* Styles the auth buttons */
+.auth-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+/* Styles auth buttons hover animation */
+.auth-btn:hover {
+    background: var(--primary-color-dark);
+}
+/* Styles the auth link */
+.auth-link {
+    text-align: center;
+    margin-top: 1rem;
+}
+/* Styles links within the auth area */
+.auth-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+/* Styles hover for auth links */
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+/* Login Button Styles */
+/* Styles the login button in the header */
+.login-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+}
+/* Styles the hover effect for the login button */
+.login-btn:hover {
+    background: var(--primary-color-dark);
+}
+
+/* Login Modal Styles */
+/* Styles the login modal */
+.login-modal {
+    max-width: 400px;
+    width: 90%;
+    padding: 20px;
+}
+/* Styles the login tabs */
+.login-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+/* Styles the tab buttons */
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: var(--surface-color);
+    cursor: pointer;
+    border-radius: 4px;
+}
+/* Styles the active tab button */
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+/* Styles auth forms */
+.auth-form {
+    display: none;
+}
+/* Styles active auth forms */
+.auth-form.active {
+    display: block;
+}
+/* Styles the form groups */
+.form-group {
+    margin-bottom: 15px;
+}
+/* Styles the labels in form groups */
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+/* Styles the input fields in the form group */
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+/* Styles the submit buttons in the form */
+.submit-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+/* Styles hover for the submit buttons */
+.submit-btn:hover {
+    background: var(--primary-color-dark);
+}
+
+/* Dark Mode Styles */
+/* Dark mode styles for login modal */
+.dark-mode .login-modal {
+    background: var(--surface-color);
+    color: var(--text-color);
+}
+/* Dark mode styles for tab buttons */
+.dark-mode .tab-btn {
+    background: var(--surface-color-dark);
+    color: var(--text-color);
+}
+/* Dark mode styles for the form group input fields */
+.dark-mode .form-group input {
+    background: var(--surface-color-dark);
+    color: var(--text-color);
+    border-color: var(--border-color-dark);
+}
+
+/* NEW: Professional Reasoning Panel Styles */
+#reasoningPanel {
+  background: #f0f0f0;
+  border-top: 2px solid var(--primary-color);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px 24px;
+  margin-top: 16px;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+#reasoningPanel h4 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--primary-color);
+  padding-bottom: 8px;
+}
+
+#reasoningStepsList {
+  list-style: decimal outside;
+  padding-left: 20px;
+  margin: 12px 0 0;
+  font-family: 'Roboto', sans-serif;
+  color: var(--text-color);
+}
+
+#reasoningStepsList li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* Dark mode override for reasoning panel */
+body.dark-mode #reasoningPanel {
+  background: #2c2c2c;
+  border-top: 2px solid #66b3ff;
+  box-shadow: 0 -2px 8px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode #reasoningPanel h4,
+body.dark-mode #reasoningStepsList {
+  color: #f8f8f2;
+}

@@ -1,0 +1,103 @@
+/* Reasoning Panel Styles */
+#reasoningPanel {
+  background: #ffffff;
+  border-top: 3px solid var(--primary-color);
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+  padding: 20px 30px;
+  margin-top: 20px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, border-top-color 0.3s ease;
+  /* NEW: Use flex to center content and constrain width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#reasoningPanel h4 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  color: var(--text-color);
+  border-bottom: 1px dashed var(--primary-color);
+  padding-bottom: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+#reasoningStepsList {
+  list-style: decimal outside;
+  padding-left: 25px;
+  margin: 10px 0 0;
+  font-family: 'Roboto', sans-serif;
+  color: var(--text-color);
+  width: 100%;
+  max-width: 600px;
+}
+
+#reasoningStepsList li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Dark Mode Overrides for Reasoning Panel */
+body.dark-mode #reasoningPanel {
+  background: #1e1e1e;
+  border-top-color: #66b3ff;
+  box-shadow: 0 -4px 10px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode #reasoningPanel h4,
+body.dark-mode #reasoningStepsList {
+  color: #f8f8f2;
+}
+
+/* Reasoning Mode Button Styles */
+#toggleReasoningBtn {
+  border: 2px solid var(--primary-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--primary-color);
+  padding: 6px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#toggleReasoningBtn.active,
+#toggleReasoningBtn:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+}
+
+/* Model Error Alert Styles */
+.model-error-alert {
+  background-color: #ffdddd;
+  border: 1px solid #ff4444;
+  color: #aa0000;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* Optional shake animation for error alerts */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}
+
+.model-error-alert.shake {
+  animation: shake 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.reasoning-step {
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+}

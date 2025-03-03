@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Storyboard Generator - Improved</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
+  <!-- Google Fonts - Roboto -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <!-- External Libraries for PDF creation, image conversion, and ZIP archiving -->
+  <script
+    defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"
+  ></script>
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+  ></script>
+  <script
+    defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+  ></script>
+  <script
+    defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
+  ></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <a href="../index.html" class="logo" id="logoLink">
+      <i class="fas fa-cube"></i> HEXACOLA.AI
+    </a>
+    <nav class="main-nav">
+      <button id="homeBtn" aria-label="Go to home" onclick="navigateToHome()">
+        <i class="fas fa-home"></i> Home
+      </button>
+      <button id="generatorBtn" aria-label="Go to generator view" onclick="showGenerator()">
+        <i class="fas fa-magic"></i> Generator
+      </button>
+      <button
+        id="storyboardBtn"
+        class="active"
+        aria-label="Go to storyboard view"
+        onclick="navigateToStoryboard()"
+      >
+        <i class="fas fa-film"></i> Storyboard
+      </button>
+      <button
+        onclick="navigateToScriptwriter()"
+        aria-label="Go to scriptwriter"
+      >
+        <i class="fas fa-pen-fancy"></i> Scriptwriter
+      </button>
+      <button id="chatBtn" aria-label="Go to chat" onclick="navigateToChat()">
+        <i class="fas fa-comments"></i> Chat
+      </button>
+      <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+        <i class="fas fa-user"></i> Login
+      </button>
+      <button
+        id="darkModeToggle"
+        class="dark-mode-toggle"
+        aria-label="Toggle dark mode"
+      >
+        <i class="fas fa-moon"></i> 🌙
+      </button>
+    </nav>
+  </header>
+
+  <button class="sidebar-toggle" aria-label="Toggle Sidebar">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Add Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content login-modal">
+        <span class="close" onclick="toggleLoginModal()">&times;</span>
+        <div class="login-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('register')">Register</button>
+        </div>
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form active">
+            <div class="form-group">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+        </form>
+        <!-- Register Form -->
+        <form id="registerForm" class="auth-form">
+            <div class="form-group">
+                <label for="registerName">Full Name:</label>
+                <input type="text" id="registerName" required>
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">Email:</label>
+                <input type="email" id="registerEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Password:</label>
+                <input type="password" id="registerPassword" required>
+            </div>
+            <button type="submit" class="submit-btn">Register</button>
+        </form>
+    </div>
+  </div>
+
+  <div class="main-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Storyboard Settings">
+      <!-- Overall Story -->
+      <div class="input-group">
+        <label for="scenarioInput">Overall Story:</label>
+        <textarea
+          id="scenarioInput"
+          placeholder="Write your story scenario here. Ensure every necessary detail is included..."
+          aria-label="Overall Story"
+        ></textarea>
+      </div>
+
+      <!-- Style Selection -->
+      <div class="input-group">
+        <label for="styleSelection">Style:</label>
+        <select id="styleSelection" aria-label="Select a Style">
+          <option value="None">None</option>
+          <option value="Cinematic">Cinematic</option>
+          <option value="Pixel Art">Pixel Art</option>
+          <option value="Anime">Anime</option>
+          <option value="Realistic">Realistic</option>
+          <option value="Mix">Mix</option>
+          <option value="Storyboard">Storyboard</option>
+          <option value="Film Noir">Film Noir</option>
+          <option value="Vintage">Vintage</option>
+          <option value="Graphic Design">Graphic Design</option>
+          <option value="Cartoon">Cartoon</option>
+          <option value="Watercolor">Watercolor</option>
+          <option value="Surrealism">Surrealism</option>
+          <option value="Comics Style">Comics Style</option>
+          <option value="Concept Art">Concept Art</option>
+          <option value="Paper Cut-Out">Paper Cut-Out</option>
+          <option value="AI Comics">AI Comics</option>
+        </select>
+      </div>
+
+      <!-- Text Model -->
+      <div class="input-group">
+        <label for="textModelSelection">Text Model:</label>
+        <select id="textModelSelection" aria-label="Select a Text Model">
+          <option value="openai" selected>OpenAI GPT-4o-mini</option>
+          <option value="openai-large">OpenAI GPT-4o</option>
+          <option value="openai-reasoning">OpenAI o1-mini</option>
+          <option value="qwen-coder">Qwen 2.5 Coder</option>
+          <option value="llama">Llama 3.3 70B</option>
+          <option value="mistral">Mistral Nemo</option>
+          <option value="unity">Unity (Mistral Large)</option>
+          <option value="midijourney">Midijourney</option>
+          <option value="rtist">Rtist</option>
+          <option value="searchgpt">SearchGPT</option>
+          <option value="evil">Evil Mode</option>
+          <option value="deepseek">DeepSeek-V3</option>
+          <option value="claude-hybridspace">Claude Hybridspace</option>
+          <option value="deepseek-r1">DeepSeek-R1</option>
+          <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+          <option value="llamalight">LlamaLight</option>
+          <option value="gemini">Gemini Flash</option>
+          <option value="gemini-thinking">Gemini Thinking</option>
+          <option value="hormoz">Hormoz 8b</option>
+        </select>
+      </div>
+
+      <!-- Image Model -->
+      <div class="input-group">
+        <label for="modelSelection">Image Model:</label>
+        <select id="modelSelection" aria-label="Select an Image Model">
+          <option value="flux" selected>Flux</option>
+          <option value="turbo">Turbo</option>
+        </select>
+      </div>
+
+      <!-- Color Palette Selector -->
+      <div class="input-group">
+        <label for="colorPaletteSelection">Color Palette:</label>
+        <select id="colorPaletteSelection" aria-label="Select a Color Palette">
+          <option value="Default">Default</option>
+          <option value="Monochrome">Monochrome</option>
+          <option value="Pastel">Pastel</option>
+          <option value="Neon">Neon</option>
+          <option value="Warm">Warm</option>
+          <option value="Cool">Cool</option>
+        </select>
+      </div>
+
+      <!-- Negative Prompt (optional) -->
+      <div class="input-group">
+        <label for="negativePromptInput">Negative Prompt:</label>
+        <textarea
+          id="negativePromptInput"
+          placeholder="e.g., low quality, blurry, bad anatomy, out of focus..."
+          aria-label="Negative Prompt"
+        >low quality, blurry, bad anatomy, out of focus, noise, duplicate, watermark, text, ugly, messy, no posing to camera</textarea>
+      </div>
+
+      <!-- Main Buttons: SAVE, PDF, ZIP, FRAME REORDER -->
+      <div class="buttons">
+        <button
+          class="generate tooltip"
+          id="saveBtn"
+          aria-label="Save Storyboard"
+          data-tooltip-text="Save current storyboard"
+        >
+          <i class="fas fa-save"></i> SAVE
+        </button>
+        <button
+          class="download tooltip"
+          id="downloadPDFBtn"
+          aria-label="Download as PDF"
+          data-tooltip-text="Download storyboard as PDF"
+        >
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button
+          class="download tooltip"
+          id="downloadZIPBtn"
+          aria-label="Download as ZIP"
+          data-tooltip-text="Download storyboard as ZIP"
+        >
+          <i class="fas fa-file-zipper"></i> ZIP
+        </button>
+      </div>
+      <div class="buttons">
+        <button
+          class="generate tooltip"
+          id="reorderToggleBtn"
+          aria-label="Toggle frame reorder mode"
+          data-tooltip-text="Enable/disable frame reordering"
+        >
+          <i class="fas fa-exchange-alt"></i> REORDER OFF
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" aria-label="Storyboard Main View">
+      <div id="storyboard-container" class="storyboard-container">
+        <div id="storyboard" class="storyboard">
+          <div class="content-area">
+            <div class="storyboard .header buttons">
+              <button
+                class="generate tooltip"
+                id="addFrameBtn"
+                aria-label="Add Frame"
+                data-tooltip-text="Add a new frame"
+              >
+                <i class="fas fa-plus"></i> ADD FRAME
+              </button>
+              <h1>STORYBOARD</h1>
+              <button
+                class="generate tooltip"
+                id="generateStoryboardBtn"
+                aria-label="Generate storyboard"
+                data-tooltip-text="Generate the Storyboard"
+              >
+                <i class="fas fa-magic"></i> GENERATE STORYBOARD
+              </button>
+            </div>
+
+            <div class="input-group">
+              <!-- Frames Will Be Appended Here -->
+              <div
+                class="generated-image"
+                id="storyboardFrames"
+                aria-label="Storyboard Frames"
+              ></div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="instructions" style="margin: 20px;">
+              <h2>How to Use:</h2>
+              <ol>
+                <li>
+                  Enter the overall story scenario in the "Overall Story" field
+                  on the left.
+                </li>
+                <li>
+                  Select your preferred style, text model, image model, and
+                  color palette.
+                </li>
+                <li>Add frames (up to 10).</li>
+                <li>
+                  The AI will generate scene descriptions, emotions, and camera
+                  shots based on your inputs.
+                </li>
+                <li>
+                  Click "GENERATE STORYBOARD" to create images for each frame
+                  concurrently.
+                </li>
+                <li>
+                  If a frame isn't satisfactory, use the "REGENERATE FRAME"
+                  button to generate a new image for that frame.
+                </li>
+                <li>
+                  Use the "REORDER OFF" button to enable drag-and-drop mode for
+                  rearranging frames.
+                </li>
+                <li>
+                  Save your storyboard locally by clicking "SAVE". You can
+                  restore it later by reopening the page.
+                </li>
+                <li>
+                  Download your storyboard as a PDF or ZIP using the respective
+                  buttons.
+                </li>
+                <li>
+                  Toggle dark mode using the "🌙" button at the top.
+                </li>
+              </ol>
+            </div>
+
+            <!-- Live Story Preview -->
+            <div class="story-preview" aria-label="Live Story Preview">
+              <h2>Live Story Preview:</h2>
+              <div id="liveStory" class="live-story"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal for Enlarged Images and Prompts -->
+  <div id="imageModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <span class="close" aria-label="Close modal">&times;</span>
+      <img class="modal-image" id="modalImage" alt="Enlarged Image" loading="lazy" />
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div
+    class="overlay"
+    id="overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="aiMessage"
+    aria-live="assertive"
+  >
+    <div class="loading-container">
+      <div class="hexagon-loader">
+        <div class="hexagon"></div>
+      </div>
+      <div id="timer" class="loading-text">Initializing...</div>
+      <div id="aiMessage" class="loading-message">Preparing to create your masterpiece...</div>
+      <div id="loadingMessage" class="loading-message">Please wait while we process your request...</div>
+      <div class="progress-container">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <div class="thinking-process" id="thinkingProcess">
+        <!-- ...existing thinking process code... -->
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      API Documentation:
+      <a
+        href="https://github.com/pollinations/pollinations/blob/master/APIDOCS.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Pollinations.AI</a
+      >
+    </p>
+    <p>© 2024 Tauris – HEXACOLA AI STORYBOARDER</p>
+  </footer>
+
+  <!-- Our main JS code is now in a separate file -->
+  <script src="../js/storyboard.js" defer></script>
+  <script src="../js/navigation.js"></script>
+  <script>
+    document.getElementById('textModelSelection').addEventListener('change', function(e) {
+      const warningText = this.parentElement.querySelector('.model-info');
+      if (e.target.value === 'evil') {
+        warningText.style.display = 'block';
+        warningText.style.color = '#ff4444';
+      } else {
+        warningText.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

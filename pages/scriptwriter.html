@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HEXACOLA AI - Advanced AI Scriptwriting Interface">
+    <meta name="theme-color" content="#6b8e23">
+    <title>Scriptwriter - HEXACOLA AI</title>
+    
+    <link rel="preload" href="../css/style.css" as="style">
+    <link rel="preload" href="../css/scriptwriter.css" as="style">
+    <link rel="preload" href="https://cdn.quilljs.com/1.3.6/quill.snow.css" as="style">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/scriptwriter.css">
+    <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        .main-wrapper {
+            padding: 0 !important;
+            margin: 60px 0 0 0 !important;
+            min-height: calc(100vh - 60px) !important;
+        }
+
+        .container.active {
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+        }
+
+        .editor-controls {
+            position: sticky;
+            bottom: 0;
+            background: var(--surface-color);
+            padding: 15px 40px;
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+            border-top: 1px solid var(--sidebar-border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        #editor {
+            height: calc(100vh - 180px);
+            margin-bottom: 60px;
+        }
+
+        .ql-toolbar.ql-snow {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--sidebar-border);
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-cube"></i> HEXACOLA.AI
+        </a>
+        <nav class="main-nav">
+            <button onclick="navigateToHome()" aria-label="Go to home">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button onclick="showGenerator()" aria-label="Go to generator view">
+                <i class="fas fa-magic"></i> Generator
+            </button>
+            <button onclick="navigateToStoryboard()" aria-label="Go to storyboard view">
+                <i class="fas fa-film"></i> Storyboard
+            </button>
+            <button onclick="navigateToScriptwriter()" class="active" aria-label="Go to scriptwriter">
+                <i class="fas fa-pen-fancy"></i> Scriptwriter
+            </button>
+            <button onclick="navigateToChat()" aria-label="Go to chat">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+                <i class="fas fa-user"></i> Login
+            </button>
+            <button onclick="toggleDarkMode()" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <button class="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <!-- ... existing login modal code ... -->
+    </div>
+
+    <div class="scriptwriter-layout">
+        <div class="sidebar">
+            <h2>AI Script Assistant</h2>
+            
+            <!-- AI Settings Panel -->
+            <div class="ai-settings-panel">
+                <div class="settings-group">
+                    <label>Enable AI Suggestions for:</label>
+                    <div class="format-checkboxes">
+                        <div class="format-checkbox">
+                            <input type="checkbox" id="suggestScene" name="suggestFor" value="scene-heading" checked>
+                            <label for="suggestScene">Scene Headings</label>
+                        </div>
+                        <div class="format-checkbox">
+                            <input type="checkbox" id="suggestCharacter" name="suggestFor" value="character" checked>
+                            <label for="suggestCharacter">Characters</label>
+                        </div>
+                        <div class="format-checkbox">
+                            <input type="checkbox" id="suggestDialogue" name="suggestFor" value="dialogue" checked>
+                            <label for="suggestDialogue">Dialogue</label>
+                        </div>
+                        <div class="format-checkbox">
+                            <input type="checkbox" id="suggestAction" name="suggestFor" value="action" checked>
+                            <label for="suggestAction">Action</label>
+                        </div>
+                        <div class="format-checkbox">
+                            <input type="checkbox" id="suggestParenthetical" name="suggestFor" value="parenthetical" checked>
+                            <label for="suggestParenthetical">Parentheticals</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <label for="suggestionFrequency">Suggestion Frequency:</label>
+                    <select id="suggestionFrequency">
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                
+                <div class="settings-group">
+                    <label for="suggestionDetail">Suggestion Detail:</label>
+                    <select id="suggestionDetail">
+                        <option value="word">Word</option>
+                        <option value="phrase">Phrase</option>
+                        <option value="sentence" selected>Sentence</option>
+                        <option value="paragraph">Paragraph</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Format Buttons -->
+            <div class="format-buttons">
+                <button class="format-btn" data-format="scene-heading" data-shortcut="1">
+                    <i class="fas fa-film"></i> Scene Heading (1)
+                </button>
+                <button class="format-btn" data-format="action" data-shortcut="2">
+                    <i class="fas fa-running"></i> Action (2)
+                </button>
+                <button class="format-btn" data-format="character" data-shortcut="3">
+                    <i class="fas fa-user"></i> Character (3)
+                </button>
+                <button class="format-btn" data-format="dialogue" data-shortcut="4">
+                    <i class="fas fa-comments"></i> Dialogue (4)
+                </button>
+                <button class="format-btn" data-format="parenthetical" data-shortcut="5">
+                    <i class="fas fa-theater-masks"></i> Parenthetical (5)
+                </button>
+                <button class="format-btn" data-format="transition" data-shortcut="6">
+                    <i class="fas fa-random"></i> Transition (6)
+                </button>
+            </div>
+
+            <!-- Add inside the sidebar, after the format buttons -->
+            <div class="script-templates">
+                <h3>Templates</h3>
+                <button class="template-btn" data-template="film">
+                    <i class="fas fa-film"></i> Feature Film
+                </button>
+                <button class="template-btn" data-template="tv">
+                    <i class="fas fa-tv"></i> TV Episode
+                </button>
+                <button class="template-btn" data-template="short">
+                    <i class="fas fa-video"></i> Short Film
+                </button>
+            </div>
+
+            <div class="script-libraries">
+                <h3>Script Library</h3>
+                <div class="library-list">
+                    <div class="library-item">
+                        <i class="fas fa-book"></i>
+                        <span>My First Script</span>
+                    </div>
+                    <div class="library-item">
+                        <i class="fas fa-book"></i>
+                        <span>Untitled Project</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-scripts">
+                <h3>Recent Scripts</h3>
+                <div class="recent-script-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="script-info">
+                        <div class="script-title">Project X</div>
+                        <div class="script-meta">Modified 2 hours ago</div>
+                    </div>
+                </div>
+                <div class="recent-script-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="script-info">
+                        <div class="script-title">My Awesome Script</div>
+                        <div class="script-meta">Modified yesterday</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Toggle -->
+            <button id="toggleSuggestions" class="active">
+                <i class="fas fa-lightbulb"></i> AI Suggestions On
+            </button>
+        </div>
+
+        <div class="editor-container">
+            <div class="header">
+                <h1>AI Scriptwriter</h1>
+                <div class="header-controls">
+                    <button id="saveScript" class="action-btn" aria-label="Save script">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button id="exportScript" class="action-btn" aria-label="Export script">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor Container -->
+            <div id="editor"></div>
+
+            <div class="editor-controls">
+                <div class="format-quick-access">
+                    <!-- Quick format buttons -->
+                </div>
+                <div class="ai-controls">
+                    <button id="toggleSuggestions" class="active">
+                        <i class="fas fa-lightbulb"></i> AI Suggestions
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-indicator">
+            <span class="page-number">Page 1</span>
+        </div>
+
+        <div class="save-settings">
+            <div class="auto-save-indicator">
+                <i class="fas fa-sync-alt"></i>
+                <span>Auto-saving...</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 HEXACOLA AI. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="../js/navigation.js"></script>
+    <script src="../js/scriptwriter.js"></script>
+</body>
+</html>

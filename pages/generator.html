@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image generator</title>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Google Fonts for Modern Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- External CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <!-- New Header -->
+  <header class="main-header">
+    <a href="../index.html" class="logo">
+      <i class="fas fa-cube"></i> HEXACOLA.AI
+    </a>
+    <nav class="main-nav">
+      <button onclick="navigateToHome()" aria-label="Go to home">
+        <i class="fas fa-home"></i> Home
+      </button>
+      <button onclick="showGenerator()" class="active" aria-label="Go to generator view">
+        <i class="fas fa-magic"></i> Generator
+      </button>
+      <button onclick="navigateToStoryboard()" aria-label="Go to storyboard view">
+        <i class="fas fa-film"></i> Storyboard
+      </button>
+      <button onclick="navigateToScriptwriter()" aria-label="Go to scriptwriter">
+        <i class="fas fa-pen-fancy"></i> Scriptwriter
+      </button>
+      <button onclick="navigateToChat()" aria-label="Go to chat">
+        <i class="fas fa-comments"></i> Chat
+      </button>
+      <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+        <i class="fas fa-user"></i> Login
+      </button>
+      <button onclick="toggleDarkMode()" class="dark-mode-toggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i> 🌙
+      </button>
+    </nav>
+  </header>
+
+  <!-- Add Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content login-modal">
+      <span class="close" onclick="toggleLoginModal()">&times;</span>
+      <div class="login-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" onclick="switchTab('register')">Register</button>
+      </div>
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form active">
+        <div class="form-group">
+          <label for="loginEmail">Email:</label>
+          <input type="email" id="loginEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password:</label>
+          <input type="password" id="loginPassword" required>
+        </div>
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+      <!-- Register Form -->
+      <form id="registerForm" class="auth-form">
+        <div class="form-group">
+          <label for="registerName">Full Name:</label>
+          <input type="text" id="registerName" required>
+        </div>
+        <div class="form-group">
+          <label for="registerEmail">Email:</label>
+          <input type="email" id="registerEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="registerPassword">Password:</label>
+          <input type="password" id="registerPassword" required>
+        </div>
+        <button type="submit" class="submit-btn">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="main-wrapper">
+    <!-- Sidebar for Chat and Prompt Generators -->
+    <aside class="sidebar" aria-label="Sidebar Navigation">
+      <h2>For Inspiration</h2>
+      <div class="input-group">
+        <label>Generate Prompt:</label>
+        <button class="generate-prompt tooltip" onclick="generateRandomPrompt('background')" aria-label="Generate a background prompt">
+          <i class="fas fa-lightbulb"></i> GENERATE BACKGROUND
+          <span class="tooltiptext">Generate a random background prompt</span>
+        </button>
+        <button class="generate-prompt tooltip" onclick="generateRandomPrompt('character')" aria-label="Generate a character prompt">
+          <i class="fas fa-lightbulb"></i> GENERATE CHARACTER
+          <span class="tooltiptext">Generate a random character prompt</span>
+        </button>
+        <button class="library-button tooltip" onclick="showLibrary()" aria-label="View library">
+          <i class="fas fa-images"></i> VIEW LIBRARY
+          <span class="tooltiptext">View saved images</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Container for Image Generation and Enhanced Features -->
+    <main class="container active" id="generatorContainer" aria-label="Image Generator">
+      <div class="header">
+        <h1>IMAGE GENERATOR</h1>
+      </div>
+      <!-- Prompts Section -->
+      <div class="input-group">
+        <label for="backgroundPrompt">Background Prompt:</label>
+        <textarea id="backgroundPrompt" placeholder="e.g., Sunset in the mountains, green Italian lake..." aria-label="Background prompt"></textarea>
+      </div>
+      <div class="input-group">
+        <label for="characterPrompt">Character Prompt:</label>
+        <textarea id="characterPrompt" placeholder="e.g., Young knight with angel wings..." aria-label="Character prompt" rows="2"></textarea>
+        <button type="button" id="addCharacterBtn" onclick="addCharacterDescription()" title="Add additional character description" aria-label="Add additional character description">+</button>
+      </div>
+      <div id="additionalCharacterDescriptions">
+        <!-- Additional character descriptions will appear here -->
+      </div>
+      <div class="input-group">
+        <label for="negativePrompt">Negative Prompt:</label>
+        <textarea id="negativePrompt" placeholder="I don't want logo, distorted style..." aria-label="Negative prompt"></textarea>
+      </div>
+      
+      <!-- Feature Toggles Section -->
+      <div class="toggles" aria-label="Feature Toggles">
+        <!-- Camera Features Toggle Group -->
+        <div class="toggle-group">
+          <label>Camera:</label>
+          <div class="toggle-buttons" id="cameraFeaturesToggles" role="group" aria-label="Camera Features Toggles">
+            <!-- Dynamically populated toggle buttons for camera features -->
+          </div>
+        </div>
+        <!-- Color Schemes Toggle Group -->
+        <div class="toggle-group">
+          <label>Color Schemes:</label>
+          <div class="toggle-buttons" id="colorSchemesToggles" role="group" aria-label="Color Schemes Toggles">
+            <!-- Dynamically populated toggle buttons for color schemes -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Dynamic Descriptions -->
+      <div class="description" id="dynamicDescription" aria-live="polite">
+        <!-- Descriptions for selected features and color schemes will appear here -->
+      </div>
+      
+      <!-- Options -->
+      <div class="input-group">
+        <div class="option">
+          <label for="model">Model:</label>
+          <select id="model" aria-label="Select a model">
+            <option value="flux" selected>Flux</option>
+            <option value="turbo">Turbo</option>
+          </select>
+        </div>
+        <div class="option">
+          <label for="width">Width (px):</label>
+          <input type="number" id="width" value="1024" min="512" max="2048" aria-label="Set width in pixels" />
+        </div>
+        <div class="option">
+          <label for="height">Height (px):</label>
+          <input type="number" id="height" value="1024" min="512" max="2048" aria-label="Set height in pixels" />
+        </div>
+        <div class="option">
+          <label for="seed">Seed:</label>
+          <input type="number" id="seed" placeholder="Leave empty for random..." aria-label="Set seed" />
+        </div>
+        <div class="option">
+          <label for="imageOptions">How many images (max 10):</label>
+          <input type="number" id="imageOptions" value="1" min="1" max="10" aria-label="Set the number of images" />
+        </div>
+        <div class="option">
+          <label for="style">Style:</label>
+          <select id="style" aria-label="Select a style">
+            <option value="None">None</option>
+            <option value="Film">Film</option>
+            <option value="Pixel Art">Pixel Art</option>
+            <option value="Anime">Anime</option>
+            <option value="Realistic">Realistic</option>
+            <option value="Mix">Mix</option>
+            <option value="Storyboard">Storyboard</option>
+            <option value="Film Noir">Film Noir</option>
+            <option value="Vintage">Vintage</option>
+            <option value="Graphic Design">Graphic Design</option>
+            <option value="Cartoon">Cartoon</option>
+            <option value="Watercolor">Watercolor</option>
+             <option value="Surrealism">Surrealism</option>
+            <option value="Comics Style">Comics Style</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Buttons -->
+      <div class="buttons">
+        <button class="generate tooltip" onclick="generateImage()" aria-label="Generate Image">
+          <i class="fas fa-magic"></i> GENERATE
+          <span class="tooltiptext">Click to generate a new image</span>
+        </button>
+         <button class="auto-toggle tooltip" onclick="toggleAutoMode()" id="autoToggleBtn" data-tooltip="Automatically optimize prompts using AI" aria-pressed="false" aria-label="Automatic mode">
+          <i class="fas fa-robot"></i> AUTO OFF
+          <span class="tooltiptext">Automatically optimize prompts using AI</span>
+        </button>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="progress-container" id="progressContainer" hidden aria-label="Generation progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      
+      <!-- Generated Images -->
+      <div class="generated-image" id="generatedImage" aria-label="Generated images"></div>
+      
+      <!-- Loading Indicator -->
+      <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Generating">
+        <div class="loading-container">
+          <div class="hexagon-loader">
+            <div class="hexagon"></div>
+          </div>
+          <div id="timer" class="loading-text">Initializing...</div>
+          <div id="loadingMessage" class="loading-message">Preparing to generate your masterpiece...</div>
+          <div class="thinking-process" id="thinkingProcess">
+            <div class="thinking-step" data-step="1">
+              <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-label">Analyzing Prompts</span>
+              </div>
+              <div class="step-content">Processing your creative inputs...</div>
+            </div>
+            <div class="thinking-step" data-step="2">
+              <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-label">Optimizing Parameters</span>
+              </div>
+              <div class="step-content">Fine-tuning generation settings...</div>
+            </div>
+            <div class="thinking-step" data-step="3">
+              <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-label">Creating Image</span>
+              </div>
+              <div class="step-content">Bringing your vision to life...</div>
+            </div>
+          </div>
+          <div class="progress-container" id="progressOverlay" hidden>
+            <div class="progress-bar" id="progressOverlayBar"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Library Container -->
+    <section class="library-container" id="libraryContainer" aria-label="Library">
+      <h2>Library</h2>
+      <div class="generated-image" id="libraryImages" aria-label="Library images">
+        <!-- Saved images will appear here -->
+      </div>
+      <div class="buttons">
+        <button class="generate tooltip" onclick="showGenerator()" aria-label="Back to generator">
+          <i class="fas fa-arrow-left"></i> GENERATOR
+          <span class="tooltiptext">Back to the image generator</span>
+        </button>
+        <button class="download tooltip" onclick="downloadAllLibraryImages()" aria-label="Download all images">
+          <i class="fas fa-download"></i> DOWNLOAD ALL
+          <span class="tooltiptext">Download all library images</span>
+        </button>
+        <button class="clear-library tooltip" onclick="clearLibrary()" aria-label="Clear library">
+          <i class="fas fa-trash-alt"></i> CLEAR LIBRARY
+          <span class="tooltiptext">Clear all images from the library</span>
+        </button>
+      </div>
+    </section>
+  </div>
+  
+  <!-- Modal for Fullscreen Image -->
+  <div id="imageModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalImage">
+    <span class="close" aria-label="Close">×</span>
+    <img class="modal-content" id="modalImage" alt="Large generated image">
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>
+      API Documentation:
+      <a href="https://github.com/pollinations/pollinations/blob/master/APIDOCS.md" target="_blank">Pollinations.AI</a>
+    </p>
+    <p>
+      © 2024 Tauris – HEXACOLA AI
+    </p>
+  </footer>
+    
+    <!-- External JavaScript -->
+  <script src="../js/app.js"></script>
+    <script src="../js/navigation.js"></script>
+  <!-- JavaScript Function to Navigate to Storyboard -->
+  <script>
+    /**
+     * Navigate to the Storyboard Page
+     */
+  
+    function showLibrary() {
+      document.getElementById('generatorContainer').classList.remove('active');
+        document.getElementById('libraryContainer').classList.add('active');
+       setActiveNavButton('library');
+    }
+   function setActiveNavButton(page) {
+      const navButtons = document.querySelectorAll('.top-nav .nav-button');
+       navButtons.forEach(button => {
+            button.classList.remove('active');
+           if(button.textContent.trim().toLowerCase() === page) {
+              button.classList.add('active');
+          }
+       });
+   }
+  document.addEventListener("DOMContentLoaded", () => {
+       setActiveNavButton('generator');
+         loadDarkMode();
+         setupModal();
+         disableImageDownload();
+         addEventListeners();
+         addTooltips();
+    });
+
+    // Add the missing addTooltips function
+    function addTooltips() {
+      const tooltips = document.querySelectorAll('.tooltip');
+      tooltips.forEach(tooltip => {
+        tooltip.addEventListener('mouseover', function(e) {
+          const tooltipText = this.querySelector('.tooltiptext');
+          if (tooltipText) {
+            tooltipText.style.visibility = 'visible';
+            tooltipText.style.opacity = '1';
+          }
+        });
+        
+        tooltip.addEventListener('mouseout', function(e) {
+          const tooltipText = this.querySelector('.tooltiptext');
+          if (tooltipText) {
+            tooltipText.style.visibility = 'hidden';
+            tooltipText.style.opacity = '0';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

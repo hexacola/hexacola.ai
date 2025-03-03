@@ -1,0 +1,717 @@
+/* CSS Variables specific to scriptwriter */
+:root {
+  --script-font: 'Courier Prime', monospace;
+  --script-size: 12pt;
+  --script-line-height: 1.5;
+  --suggestion-bg: rgba(107, 142, 35, 0.1);
+  --suggestion-text: #666666;
+}
+
+/* Quill Editor Container */
+#editor {
+  font-family: var(--script-font);
+  font-size: var(--script-size);
+  line-height: var(--script-line-height);
+  min-height: calc(100vh - 200px);
+  padding: 40px;
+  background: white;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+  height: calc(100vh - 180px); /* Account for header, footer, and controls */
+  margin-bottom: 0; /* Space for controls */
+  max-width: 8.5in;
+  margin: 0 auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  /* Override previous styles */
+  width: 8.5in !important; /* Standard US Letter/A4 compatible width */
+  min-height: 11in !important;
+  padding: 1in !important; /* Standard 1-inch margins */
+  margin: 40px auto !important; /* Center the page and add vertical spacing */
+  background: white !important;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+  border: 1px solid #ddd !important;
+  box-sizing: border-box !important;
+  font-family: 'Courier Prime', monospace !important;
+  font-size: 12pt !important;
+  line-height: 1.5 !important;
+}
+
+/* Script Element Styles */
+[data-format="scene-heading"] {
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 24px 0 12px 0;
+  margin: 24px 0 12px 0 !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+}
+
+[data-format="action"] {
+  margin: 12px 0;
+  margin: 12px 0 !important;
+  text-align: left !important;
+}
+
+[data-format="character"] {
+  text-transform: uppercase;
+  text-align: center;
+  margin: 24px 0 0 0;
+  padding-left: 192px; /* 2 inches */
+  margin: 24px 0 0 0 !important;
+  width: 4in !important; /* Standard character name width */
+  margin-left: 2in !important; /* Standard character indent */
+  text-align: left !important;
+  text-transform: uppercase !important;
+}
+
+[data-format="dialogue"] {
+  text-align: left;
+  margin: 0 0 12px 0;
+  padding-left: 96px; /* 1 inch */
+  padding-right: calc(100% - 312px); /* 3.5 inches wide */
+  margin: 0 !important;
+  width: 3.5in !important; /* Standard dialogue width */
+  margin-left: 1in !important; /* Standard dialogue indent */
+  text-align: left !important;
+}
+
+[data-format="parenthetical"] {
+  text-align: left;
+  font-style: italic;
+  padding-left: 144px; /* 1.5 inches */
+  padding-right: calc(100% - 312px); /* 2.5 inches wide */
+  margin: 0;
+  margin: 0 !important;
+  width: 2in !important; /* Standard parenthetical width */
+  margin-left: 1.5in !important; /* Standard parenthetical indent */
+  text-align: left !important;
+  font-style: italic !important;
+}
+
+/* AI Suggestion Styles */
+.has-suggestion {
+  position: relative;
+}
+
+.has-suggestion::after {
+  content: '⌨';  /* Keyboard symbol to indicate suggestion */
+  position: absolute;
+  right: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--primary-color);
+  opacity: 0.7;
+}
+
+/* Suggestion text styling */
+.ql-editor .ql-suggestion {
+  color: var(--suggestion-text);
+  background: var(--suggestion-bg);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Loading Indicator */
+.suggestion-loading {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--surface-color);
+  padding: 10px 15px;
+  border-radius: 20px;
+  box-shadow: var(--box-shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.suggestion-loading.visible {
+  opacity: 1;
+}
+
+.suggestion-loading .dots {
+  display: flex;
+  gap: 4px;
+}
+
+.suggestion-loading .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.suggestion-loading .dot:nth-child(1) { animation-delay: -0.32s; }
+.suggestion-loading .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+
+/* Toggle Button */
+#toggleSuggestions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 20px;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#toggleSuggestions.active {
+  background: var(--primary-color);
+  color: var(--surface-color);
+}
+
+#toggleSuggestions:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+/* Settings Panel */
+.ai-settings-panel {
+  padding: 15px;
+  background: var(--surface-color);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.settings-group {
+  margin-bottom: 15px;
+}
+
+.settings-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Checkbox Styles */
+.format-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.format-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--primary-color);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.format-checkbox input[type="checkbox"]:checked {
+  background: var(--primary-color);
+}
+
+.format-checkbox input[type="checkbox"]:checked::after {
+  content: '✓';
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+}
+
+/* Error Message */
+.error-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ff4444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: var(--box-shadow);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Dark Mode Adjustments */
+.dark-mode #editor {
+  background: var(--surface-color);
+  border-color: var(--border-color-dark);
+}
+
+.dark-mode .suggestion-loading {
+  background: var(--surface-color-dark);
+}
+
+.dark-mode #toggleSuggestions {
+  background: var(--surface-color-dark);
+}
+
+.dark-mode .ai-settings-panel {
+  background: var(--surface-color-dark);
+  border-color: var(--border-color-dark);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  [data-format="character"] {
+    padding-left: 96px;
+  }
+
+  [data-format="dialogue"] {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+
+  [data-format="parenthetical"] {
+    padding-left: 72px;
+    padding-right: 72px;
+  }
+
+  .suggestion-loading {
+    bottom: 80px;
+    right: 10px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  #editor {
+    box-shadow: none;
+    border: none;
+    width: 8.5in !important;
+    height: 11in !important;
+    padding: 1in !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .suggestion-loading,
+  #toggleSuggestions,
+  .ai-settings-panel,
+  .has-suggestion::after {
+    display: none;
+  }
+
+  [data-format] {
+    page-break-inside: avoid;
+  }
+
+  .ql-editor {
+    min-height: 9in !important;
+  }
+
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+}
+
+.editor-controls {
+    position: fixed;
+    bottom: 0;
+    left: 300px; /* Align with sidebar width */
+    width: calc(100% - 300px);
+    padding: 15px 40px;
+    background: var(--surface-color);
+    border-top: 1px solid var(--sidebar-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+/* Editor Layout Improvements */
+.scriptwriter-layout {
+    display: flex; /* Change from grid to flex */
+    height: calc(100vh - 60px);
+    margin-top: 60px;
+    overflow: hidden;
+}
+
+/* Improved Sidebar */
+.sidebar {
+    width: 300px;
+    min-width: 300px; /* Prevent shrinking */
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px;
+    border-right: 1px solid var(--sidebar-border);
+    background: var(--surface-color);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Format Buttons Improvements */
+.format-buttons {
+    width: 100%;
+    padding: 0;
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.format-btn {
+    width: 100%;
+    text-align: left;
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 12px 15px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.format-btn i {
+    width: 20px;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+.format-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.format-btn:hover i {
+    color: white;
+}
+
+/* Shortcut Display */
+.format-btn::after {
+    content: attr(data-shortcut);
+    position: absolute;
+    right: 12px;
+    padding: 2px 6px;
+    background: rgba(107, 142, 35, 0.1);
+    border-radius: 4px;
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+/* Script Templates Section */
+.script-templates {
+    border-top: 1px solid var(--sidebar-border);
+    padding-top: 15px;
+}
+
+.script-templates h3 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: 1em;
+}
+
+.template-btn {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.template-btn:hover {
+    background: var(--suggestion-bg);
+}
+
+/* Script Libraries Section */
+.script-libraries {
+    border-top: 1px solid var(--sidebar-border);
+    padding-top: 15px;
+}
+
+.library-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.library-item {
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+.library-item:hover {
+    background: var(--suggestion-bg);
+}
+
+/* Recent Scripts Section */
+.recent-scripts {
+    border-top: 1px solid var(--sidebar-border);
+    padding-top: 15px;
+}
+
+.recent-script-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.recent-script-item:hover {
+    background: var(--suggestion-bg);
+}
+
+.recent-script-item .script-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.script-title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.script-meta {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+/* Main Editor Container Improvements */
+.editor-container {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f5f5f5; /* Light background to make paper stand out */
+    padding: 40px;
+    position: relative;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+}
+
+/* Page Management */
+.page-indicator {
+    position: fixed;
+    right: 20px;
+    bottom: 80px;
+    background: var(--surface-color);
+    padding: 8px 16px;
+    border-radius: 4px;
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+}
+
+.page-number {
+    font-family: var(--script-font);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* Script Element Refinements */
+.ql-editor {
+    padding: 1in;
+    min-height: 11in;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    padding: 0 !important; /* Remove default Quill padding */
+    margin: 0 !important;
+    min-height: 9in !important; /* Account for 1-inch top/bottom margins */
+    background: white !important;
+    font-family: var(--script-font) !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    counter-reset: page;
+}
+
+/* Page break simulation */
+.ql-editor > p[data-format] {
+    position: relative;
+    break-inside: avoid;
+}
+
+/* Page numbers */
+.ql-editor > p[data-format]:nth-of-type(55n):after {
+    content: counter(page);
+    counter-increment: page;
+    position: absolute;
+    top: -0.5in;
+    right: 0;
+    font-size: 12pt;
+}
+
+[data-format] {
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+[data-format]:hover {
+    background: rgba(107, 142, 35, 0.05);
+}
+
+/* Save Settings Panel */
+.save-settings {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--surface-color);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.auto-save-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--primary-color);
+    font-size: 0.9em;
+}
+
+/* Scrollbar Styling */
+.ql-editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ql-editor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.ql-editor::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Responsive Improvements */
+@media (max-width: 1200px) {
+    .scriptwriter-layout {
+        grid-template-columns: 250px 1fr;
+    }
+    .sidebar {
+        width: 250px;
+        min-width: 250px;
+    }
+    
+    .editor-controls {
+        left: 250px;
+        width: calc(100% - 250px);
+    }
+}
+
+@media (max-width: 768px) {
+    .scriptwriter-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -300px;
+        width: 300px;
+        z-index: 1000;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .editor-controls {
+        left: 0;
+        width: 100%;
+    }
+
+    #editor {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0.5in !important;
+    }
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 8.5in) {
+    #editor {
+        width: 100% !important;
+        margin: 20px 0 !important;
+        padding: 0.5in !important;
+    }
+
+    [data-format="character"],
+    [data-format="dialogue"],
+    [data-format="parenthetical"] {
+        width: auto !important;
+        margin-left: 20px !important;
+        margin-right: 20px !important;
+    }
+}
+
+/* Add overlay for mobile sidebar */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="HEXACOLA AI - Advanced AI Chat Interface">
+    <meta name="theme-color" content="#6b8e23">
+    <title>Chat - HEXACOLA AI</title>
+    <link rel="preload" href="../css/style.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" as="style">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="../css/reasoning.css">
+    <style>
+        .chat-message pre {
+            max-width: 100%;
+            overflow-x: auto;
+            /* background: #2d2d2d; */
+            border-radius: 4px;
+            padding: 1em;
+            border: 1px solid var(--primary-color); /* Add border for framing */
+        }
+
+        .formatted-link {
+            color: #007bff;
+            text-decoration: none;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .formatted-link:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            text-decoration: underline;
+        }
+
+        .dark-mode .formatted-link {
+            color: #66b3ff;
+        }
+
+        .dark-mode .formatted-link:hover {
+            background-color: rgba(102, 179, 255, 0.1);
+        }
+
+        /* Modal container */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+        }
+
+        /* Modal content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 8px;
+        }
+
+        /* Close button */
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        /* Ensure code is styled properly in modal */
+        #codeModal pre {
+            /* background: #2d2d2d; */
+            color: #f8f8f2;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid var(--primary-color); /* Add border for framing */
+        }
+
+        /* Dark mode adjustments for modal */
+        .dark-mode .modal-content {
+            background-color: #1e1e1e;
+            color: #f8f8f2;
+        }
+
+        .dark-mode #codeModal pre {
+            background: #2d2d2d;
+        }
+
+        /* Remove old thinking process styles */
+        .thinking-indicators {
+            display: none;
+        }
+
+        .chat-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 0.1px;
+            height: calc(100vh - 180px); /* Adjust for header + footer + padding */
+        }
+        
+        .chat {
+            padding-left: 10px; /* Add some padding to prevent avatar cutoff */
+        }
+
+        /* Add focus styles for accessibility */
+        .chat-input-group input:focus-visible,
+        .chat-input-group button:focus-visible,
+        #modelSelect:focus-visible {
+            outline: 3px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        /* Add ARIA support styles */
+        [aria-hidden="true"] {
+            display: none !important;
+        }
+        
+        /* Add loading state styles */
+        .loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .main-wrapper {
+            padding: 0 !important;
+            margin: 60px 0 0 0 !important;
+            min-height: calc(100vh - 60px) !important;
+        }
+
+        .container.active {
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+        }
+
+        .chat-input-group {
+            position: sticky;
+            bottom: 0;
+            background: var(--surface-color);
+            padding: 15px 40px;
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+            border-top: 1px solid var(--sidebar-border);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.3/purify.min.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-cube"></i> HEXACOLA.AI
+        </a>
+        <nav class="main-nav">
+            <button onclick="navigateToHome()" aria-label="Go to home">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button onclick="showGenerator()" aria-label="Go to generator view">
+                <i class="fas fa-magic"></i> Generator
+            </button>
+            <button onclick="navigateToStoryboard()" aria-label="Go to storyboard view">
+                <i class="fas fa-film"></i> Storyboard
+            </button>
+            <button onclick="navigateToScriptwriter()" aria-label="Go to scriptwriter">
+                <i class="fas fa-pen-fancy"></i> Scriptwriter
+            </button>
+            <button onclick="navigateToChat()" class="active" aria-label="Go to chat">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button onclick="toggleLoginModal()" class="login-btn" aria-label="Login or Register">
+                <i class="fas fa-user"></i> Login
+            </button>
+            <button onclick="toggleDarkMode()" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i> 🌙
+            </button>
+        </nav>
+    </header>
+
+    <!-- Add Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-modal">
+            <span class="close" onclick="toggleLoginModal()">&times;</span>
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            </div>
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerName">Full Name:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-wrapper" role="main">
+        <main class="container active" id="chatContainer" aria-label="Chat Interface">
+            <div class="header" role="banner">
+                <h1>HEXACOLA CHAT</h1>
+                <div class="header-controls">
+                    <button id="brainMemoryBtn" class="brain-button" aria-label="Toggle AI Memory">
+                        <i class="fas fa-brain"></i>
+                    </button>
+                    <button id="clearChat" class="clear-button" aria-label="Clear chat history" aria-controls="chat">
+                        <i class="fas fa-trash" aria-hidden="true"></i> Clear Chat
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div id="chat" class="chat" role="log" aria-live="polite" aria-atomic="true">
+                    <!-- Chat messages will appear here -->
+                </div>
+                <!-- NEW: Reasoning panel (hidden by default) -->
+                <div id="reasoningPanel" style="display:none; padding:10px; border-top: 1px solid #ccc; background: #f9f9f9;">
+                    <h4>AI Reasoning Steps</h4>
+                    <ul id="reasoningStepsList"></ul>
+                </div>
+            </div>
+            
+            <div class="chat-controls">
+                <div class="model-selector">
+                    <select id="modelSelect" aria-label="Select AI Model">
+                        <option value="openai" selected>OpenAI GPT-4o-mini</option>
+                        <option value="openai-large">OpenAI GPT-4o</option>
+                        <option value="openai-reasoning">OpenAI o1-mini</option>
+                        <option value="qwen-coder">Qwen 2.5 Coder</option>
+                        <option value="llama">Llama 3.3 70B</option>
+                        <option value="mistral">Mistral Nemo</option>
+                        <option value="unity">Unity (Mistral Large)</option>
+                        <option value="midijourney">Midijourney</option>
+                        <option value="rtist">Rtist</option>
+                        <option value="searchgpt">SearchGPT</option>
+                        <option value="evil">Evil Mode</option>
+                        <option value="deepseek">DeepSeek-V3</option>
+                        <option value="claude-hybridspace">Claude Hybridspace</option>
+                        <option value="deepseek-r1">DeepSeek-R1</option>
+                        <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+                        <option value="llamalight">LlamaLight</option>
+                        <option value="gemini">Gemini Flash</option>
+                        <option value="gemini-thinking">Gemini Thinking</option>
+                        <option value="hormoz">Hormoz 8b</option>
+                    </select>
+                    <button id="toggleReasoningBtn" onclick="toggleReasoningMode()">Reasoning Mode: Off</button>
+                </div>
+                <div class="chat-input-group">
+                    <input type="text" id="chatInput" placeholder="Type your message..." />
+                    <button id="sendMessageBtn">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Code Display Modal -->
+    <div id="codeModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true" hidden>
+        <div class="modal-content">
+            <header>
+                <h2 id="modalTitle">Code Preview</h2>
+                <button class="close-button" onclick="closeCodeModal()" aria-label="Close code preview">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </header>
+            <pre><code id="modalCode" class="language-javascript"></code></pre>
+        </div>
+    </div>
+
+    <div id="brainMemoryModal" class="brain-modal">
+        <div class="brain-modal-content">
+            <div class="brain-visualization">
+                <div class="brain-container">
+                    <div class="particles-container"></div>
+                    <svg class="brain-svg" viewBox="0 0 100 100">
+                        <!-- Brain shape path -->
+                        <path class="brain-path" d="M50 20 C60 20, 80 40, 80 50 C80 60, 60 80, 50 80 C40 80, 20 60, 20 50 C20 40, 40 20, 50 20"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="memory-content">
+                <h3>AI Memory Storage</h3>
+                <div class="memory-list"></div>
+            </div>
+            <button class="close-brain-modal">×</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>API Documentation: <a href="https://github.com/pollinations/pollinations/blob/master/APIDOCS.md" target="_blank">Pollinations.AI</a></p>
+        <p>© 2024 Tauris – HEXACOLA AI</p>
+    </footer>
+
+    <!-- Move script tags before the final script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../js/chat.js"></script>
+    <script src="../js/navigation.js"></script>
+    
+</body>
+</html>
