@@ -784,7 +784,7 @@ class ImageProcessor {
 async function generateImage() {
   const generateButton = document.querySelector('.generate');
   generateButton.disabled = true;
-
+  
   // Gather user inputs
   const backgroundPrompt = document.getElementById('backgroundPrompt').value.trim();
   const characterPrompt = document.getElementById('characterPrompt').value.trim();
@@ -796,7 +796,7 @@ async function generateImage() {
   const seed = seedInput ? parseInt(seedInput, 10) : null;
   const imageOptions = parseInt(document.getElementById('imageOptions').value, 10);
   const style = document.getElementById('style').value;
-
+  
   // Additional character descriptions
   const additionalCharacterDescriptions = [];
   const additionalGroups = document.querySelectorAll('.additional-character-group textarea');
@@ -804,8 +804,7 @@ async function generateImage() {
     const desc = textarea.value.trim();
     if (desc) additionalCharacterDescriptions.push(desc);
   });
-
-  // Selected camera features & color schemes
+  
   const selectedCameraFeatures = Array.from(document.querySelectorAll('#cameraFeaturesToggles button.active')).map(btn => btn.textContent);
   const selectedColorSchemes = Array.from(document.querySelectorAll('#colorSchemesToggles button.active')).map(btn => btn.textContent);
 
@@ -1540,219 +1539,3 @@ function loadImage(src) {
         img.src = src;
     });
 }
-
-// Update the generateImage function's URL creation and fetch logic:
-async function generateImage() {
-  const generateButton = document.querySelector('.generate');
-  generateButton.disabled = true;
-  const selectedColorSchemes = Array.from(document.querySelectorAll('#colorSchemesToggles button.active')).map(btn => btn.textContent);
-
-  // Check if all prompts are empty
-  const noPrompts = !backgroundPrompt && !characterPrompt && additionalCharacterDescriptions.length === 0;
-  let backgroundCombinedPrompt = '';
-  let characterCombinedPrompt = '';
-
-  // Auto-generate background & character if user gave no prompts
-  if (noPrompts) {
-    try {
-      [backgroundCombinedPrompt, characterCombinedPrompt] = await Promise.all([
-        generateRandomPromptFunction('background', style, selectedCameraFeatures, selectedColorSchemes),
-        generateRandomPromptFunction('character', style, selectedCameraFeatures, selectedColorSchemes)
-      ]);
-      document.getElementById('backgroundPrompt').value = backgroundCombinedPrompt;
-      document.getElementById('characterPrompt').value = characterCombinedPrompt;
-    } catch (error) {
-      console.error(error);
-      alert('Failed to generate random description. Please try again.');
-      generateButton.disabled = false;
-      return;
-    }
-  } else {
-    backgroundCombinedPrompt = backgroundPrompt;
-    characterCombinedPrompt = characterPrompt;
-  }
-
-  // Ensure at least one prompt is present
-  if (!backgroundCombinedPrompt && !characterCombinedPrompt) {
-    alert('Please provide at least one background or character prompt.');
-    generateButton.disabled = false;
-    return;
-  }
-
-  saveSettings();
-
-  // Initialize prompt strings for optimization
-  let optimizedBackgroundPrompt = backgroundCombinedPrompt;
-  let optimizedCharacterPrompt = characterCombinedPrompt;
-  let optimizedNegativePrompt = "low quality, blurry, bad anatomy, out of focus, noise, duplicate, watermark, text, ugly, messy, " + negativePrompt;
-
-  // If auto-mode is on, attempt prompt optimization with AI
-  if (autoMode) {
-    try {
-      if (backgroundCombinedPrompt) {
-        optimizedBackgroundPrompt = await optimizePrompt(
-          `Optimize the following background prompt for high-quality image generation in ${style} style with camera features ${selectedCameraFeatures.join(', ')} and color schemes ${selectedColorSchemes.join(', ')}: "${backgroundCombinedPrompt}"`
-        );
-      }
-      if (characterCombinedPrompt) {
-        optimizedCharacterPrompt = await optimizePrompt(
-          `Optimize the following character prompt for high-quality image generation in ${style} style with camera features ${selectedCameraFeatures.join(', ')} and color schemes ${selectedColorSchemes.join(', ')}: "${characterCombinedPrompt}"`
-        );
-      }
-      for (let i = 0; i < additionalCharacterDescriptions.length; i++) {
-        additionalCharacterDescriptions[i] = await optimizePrompt(
-          `Optimize the following character description to match the ${style} style with camera features ${selectedCameraFeatures.join(', ')} and color schemes ${selectedColorSchemes.join(', ')}: "${additionalCharacterDescriptions[i]}"`
-        );
-      }
-      if (negativePrompt) {
-        optimizedNegativePrompt = "low quality, blurry, bad anatomy, out of focus, noise, duplicate, watermark, text, ugly, messy, " + 
-          await optimizePrompt(`Optimize the following negative prompt to exclude unwanted elements: "${negativePrompt}"`);
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Error optimizing descriptions with AI. Please try again.');
-      generateButton.disabled = false;
-      return;
-    }
-  }
-
-  // Integrate additional character descriptions
-  let fullCharacterPrompt = optimizedCharacterPrompt;
-  if (additionalCharacterDescriptions.length > 0) {
-    fullCharacterPrompt += ' ' + additionalCharacterDescriptions.join(' ');
-    fullCharacterPrompt += ' Ensure all characters maintain the same style, facial structure, and clothing.';
-  }
-
-  // Merge background + character
-  let combinedPrompt = '';
-  if (optimizedBackgroundPrompt && fullCharacterPrompt) {
-    combinedPrompt = `${optimizedBackgroundPrompt}, ${fullCharacterPrompt}, with correct proportions, good perspective, and excellent composition.`;
-  } else if (optimizedBackgroundPrompt) {
-    combinedPrompt = `${optimizedBackgroundPrompt}, with correct proportions, good perspective, and excellent composition.`;
-  } else if (fullCharacterPrompt) {
-    combinedPrompt = `${fullCharacterPrompt}, with correct proportions, good perspective, and excellent composition.`;
-  }
-
-  // Apply style
-  if (style === 'Mix') {
-    combinedPrompt = appendMixStyleToPrompt(combinedPrompt);
-  } else if (style !== 'None') {
-    combinedPrompt = appendStyleToPrompt(combinedPrompt, style);
-  }
-
-  // Prepend camera features & color schemes
-  if (selectedCameraFeatures.length > 0) {
-    combinedPrompt = `${selectedCameraFeatures.join(', ')}, ${combinedPrompt}`;
-  }
-  if (selectedColorSchemes.length > 0) {
-    combinedPrompt = `${selectedColorSchemes.join(', ')}, ${combinedPrompt}`;
-  }
-
-  // Create the base URL without proxy
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(combinedPrompt)}`;
-  
-  // Add parameters separately to avoid encoding issues
-  const params = new URLSearchParams({
-    model: model,
-    width: width.toString(),
-    height: height.toString(),
-    nologo: 'true'
-  });
-
-  // Combine URL and parameters
-  const fullUrl = `${imageUrl}?${params.toString()}`;
-
-  try {
-    // Show overlay and start animations
-    const overlay = document.getElementById('overlay');
-    const timer = document.getElementById('timer');
-    overlay.style.display = 'flex';
-
-    let seconds = 0;
-    timer.textContent = `Generation time: ${seconds}s`;
-    timerInterval = setInterval(() => {
-      seconds++;
-      timer.textContent = `Generation time: ${seconds}s`;
-    }, 1000);
-
-    // Rotate loading messages every 3s
-    updateLoadingMessage();
-    loadingMessageInterval = setInterval(updateLoadingMessage, 3000);
-
-    // Thinking process animation
-    animateThinkingProcess();
-
-    // Progress bar
-    totalImages = imageOptions;
-    generatedImagesCount = 0;
-    updateProgressBar();
-
-    // Clear previously generated images
-    const generatedImageDiv = document.getElementById('generatedImage');
-    generatedImageDiv.innerHTML = '';
-
-    // Prepare URLs for parallel processing
-    const urls = [];
-    for (let i = 0; i < imageOptions; i++) {
-      const uniqueSeed = seed ? seed + i : Math.floor(Math.random() * 100000);
-      urls.push({
-        url: `${fullUrl}&seed=${uniqueSeed}`,
-        index: i
-      });
-    }
-
-    // Process images in parallel with controlled concurrency
-    const processor = new ImageProcessor(3); // Process 3 images concurrently
-    const results = await processor.processUrls(urls);
-
-    // Handle results
-    const successCount = results.filter(r => r.success).length;
-    if (successCount === 0) {
-      throw new Error('All image generation attempts failed. Please try again with different parameters.');
-    }
-
-    results.forEach(({ blob, index, success }) => {
-      if (success && blob) {
-        const imgUrl = URL.createObjectURL(blob);
-        addImageToGallery(
-          imgUrl,
-          combinedPrompt,
-          model,
-          width,
-          height,
-          seed ? seed + index : `Random_${Date.now()}`,
-          blob.type
-        );
-        saveImage(
-          imgUrl,
-          combinedPrompt,
-          model,
-          width,
-          height,
-          seed ? seed + index : `Random_${Date.now()}`,
-          blob.type
-        );
-      }
-    });
-
-    if (successCount < imageOptions) {
-      alert(`Generated ${successCount} out of ${imageOptions} images. Some images failed to generate.`);
-    }
-
-  } catch (error) {
-    console.error('Image generation error:', error);
-    alert(`Error generating image${error.message ? ': ' + error.message : '. Please try again.'}`);
-    document.getElementById('generatedImage').innerHTML = '';
-  } finally {
-    clearInterval(timerInterval);
-    clearInterval(loadingMessageInterval);
-    clearTimeout(thinkingStepTimeout);
-    document.querySelectorAll('.thinking-step').forEach(step => step.classList.remove('active', 'complete'));
-
-    document.getElementById('overlay').style.display = 'none';
-    generateButton.disabled = false;
-    document.getElementById('progressOverlay').style.display = 'none';
-  }
-}
-
-// ...rest of existing code...
